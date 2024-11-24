@@ -284,3 +284,58 @@ interface LoginResponse {
       throw error;
     }
   };
+
+  interface UserInformationResponse {
+    data: {
+      id: string;
+      
+      
+  type: string;
+      attributes: {
+        email: string;
+        name: string;
+        document: string;
+      };
+    };
+  }
+
+interface UserInformationResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      email: string;
+      name: string;
+      document: string;
+    };
+  };
+}
+
+export const fetchUserInformation = async (): Promise<UserInformationResponse> => {
+  const endpoint = 'api/v1/informations/me';
+  const token = localStorage.getItem('token'); // Obtém o token do localStorage.
+
+  if (!token) {
+    throw new Error('Usuário não autenticado. Token ausente.');
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho Authorization.
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro na requisição: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result; // Retorna o resultado no formato esperado.
+  } catch (error) {
+    console.error('Erro ao buscar informações do usuário:', error);
+    throw error;
+  }
+};

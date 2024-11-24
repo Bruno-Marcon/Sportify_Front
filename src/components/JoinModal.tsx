@@ -1,64 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { X, User } from 'lucide-react';
+import { fetchUserInformation } from '../connection/apiConnection';
+
+interface Participant {
+  name: string;
+  email: string;
+}
+
+interface Court {
+  id: string;
+  name: string;
+  category: string;
+}
+
+interface Booking {
+  id: string;
+  time: string;
+  maxPlayers: number;
+  participants: Participant[];
+}
 
 interface JoinModalProps {
   isOpen: boolean;
   onClose: () => void;
-  booking: {
-    time: string;
-    currentPlayers: number;
-    maxPlayers: number;
-    participants: { name: string; position: string }[];
-  };
-  court: {
-    name: string;
-    category: string;
-  };
+  booking: Booking;
+  court: Court;
 }
 
 const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [selectedPosition, setSelectedPosition] = useState<string>('');
+  const [userInfo, setUserInfo] = useState<Participant | null>(null);
+  const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsLoadingUserInfo(true);
+      try {
+        const response = await fetchUserInformation();
+        const user = response.data.attributes;
+        setUserInfo({ name: user.name, email: user.email });
+      } catch (error) {
+        console.error('Erro ao buscar informações do usuário:', error);
+        alert('Erro ao carregar informações do usuário.');
+      } finally {
+        setIsLoadingUserInfo(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchUserData();
+    }
+  }, [isOpen]);
 
   const handleJoin = () => {
-    if (!name || !email || !selectedPosition) {
-      alert('Por favor, preencha todos os campos antes de continuar.');
+    if (!userInfo) {
+      alert('Erro ao identificar o usuário.');
       return;
     }
 
-    // Simulação de adicionar o usuário como participante
+    // Verifica se o usuário já está na lista de participantes
+    const alreadyJoined = booking.participants.some(
+      (participant) => participant.name === userInfo.name
+    );
+
+    if (alreadyJoined) {
+      alert('Você já está confirmado nesta reserva.');
+      return;
+    }
+
+    // Adiciona o usuário à lista de participantes
     const newParticipant = {
-      name,
-      email,
-      position: selectedPosition,
+      name: userInfo.name,
+      email: userInfo.email,
     };
-    console.log(`Novo participante:`, newParticipant);
-
-    // Limpa o modal e fecha
-    handleClose();
-  };
-
-  const handleClose = () => {
-    setName('');
-    setEmail('');
-    setSelectedPosition('');
+    console.log('Usuário entrou:', newParticipant);
+    booking.participants.push(newParticipant); // Atualiza a lista de participantes
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b pb-4">
             <Dialog.Title className="text-lg font-semibold text-gray-900">
-              Juntar-se à Reserva
+              Entrar na Reserva
             </Dialog.Title>
             <button
-              onClick={handleClose}
+              onClick={onClose}
               className="rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
@@ -67,24 +98,21 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
 
           {/* Modal Content */}
           <div className="mt-4">
-            {/* Court Information */}
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Quadra:</span> {court.name}
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Esporte:</span> {court.category}
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Horário:</span> {booking.time}
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Jogadores:</span> {booking.currentPlayers}/{booking.maxPlayers}
-              </p>
-            </div>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Quadra:</span> {court.name}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Esporte:</span> {court.category}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Horário:</span> {booking.time}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Jogadores:</span> {booking.participants.length}/{booking.maxPlayers}
+            </p>
 
-            {/* Participants List */}
-            <div className="mb-4">
+            {/* List of confirmed players */}
+            <div className="mt-4">
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Jogadores Confirmados:
               </h3>
@@ -96,7 +124,7 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
                       className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-gray-700"
                     >
                       <User className="h-4 w-4 text-gray-500" />
-                      {participant.name} - {participant.position}
+                      {participant.name}
                     </li>
                   ))
                 ) : (
@@ -104,62 +132,19 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
                 )}
               </ul>
             </div>
-
-            {/* User Information */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nome:
-              </label>
-              <input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                placeholder="Digite seu nome"
-              />
-
-              <label htmlFor="email" className="mt-4 block text-sm font-medium text-gray-700">
-                E-mail:
-              </label>
-              <input
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                placeholder="Digite seu e-mail"
-                type="email"
-              />
-            </div>
-
-            {/* Position Selection */}
-            <div className="mt-4">
-              <label htmlFor="position" className="block text-sm font-medium text-gray-700">
-                Selecione sua posição:
-              </label>
-              <select
-                id="position"
-                value={selectedPosition}
-                onChange={(e) => setSelectedPosition(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-              >
-                <option value="">Escolha uma posição</option>
-                <option value="Atacante">Atacante</option>
-                <option value="Defensor">Defensor</option>
-                <option value="Goleiro">Goleiro</option>
-              </select>
-            </div>
           </div>
 
           {/* Modal Footer */}
           <div className="mt-6 flex justify-end gap-4">
             <button
-              onClick={handleClose}
+              onClick={onClose}
               className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
             >
               Cancelar
             </button>
             <button
               onClick={handleJoin}
+              disabled={!userInfo}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
               Confirmar Entrada

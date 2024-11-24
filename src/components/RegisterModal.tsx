@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Mail, Lock, User, X, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Importando useNavigate
+import { createUser } from '../connection/apiConnection';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -31,27 +33,29 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate(); // Inicializando useNavigate
+
+  const isValidCPF = (cpf: string): boolean => {
+    return /^\d{11}$/.test(cpf);
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Email validation
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      newErrors.email = 'Por gentileza, informe um email valido';
+      newErrors.email = 'Por gentileza, informe um email válido.';
     }
 
-    // Password validation
     if (formData.password.length < 8) {
-      newErrors.password = 'A senha deve conter no minimo 8 caracteres';
+      newErrors.password = 'A senha deve conter no mínimo 8 caracteres.';
     }
 
-    // Confirm password validation
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'As senhas não correspondem.';
     }
 
-    // CPF validation (basic format check)
-    if (!formData.cpf.match(/^\d{11}$/)) {
-      newErrors.cpf = 'Por gentileza, informe um CPF valido (11 digits)';
+    if (!isValidCPF(formData.cpf)) {
+      newErrors.cpf = 'Por gentileza, informe um CPF válido (11 dígitos).';
     }
 
     setErrors(newErrors);
@@ -68,15 +72,31 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // TODO: Implement actual registration logic
-      console.log('Registration attempt with:', formData);
-      
+      console.log('Payload enviado:', JSON.stringify(formData, null, 2));
+
+      const user = await createUser(
+        formData.email,
+        formData.password,
+        formData.confirmPassword,
+        formData.cpf
+      );
+
+      console.log('Usuário criado:', user);
+
+      // Limpar formulário
+      setFormData({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        cpf: '',
+      });
+
+      // Fechar modal e redirecionar para login
       onClose();
-    } catch (err) {
-      setErrors({ email: 'An error occurred. Please try again.' });
+      navigate('/login'); // Redireciona para a página de login
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error);
+      setErrors({ email: 'Ocorreu um erro ao criar a conta. Tente novamente.' });
     } finally {
       setIsLoading(false);
     }
@@ -84,10 +104,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
@@ -125,6 +145,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="email@exemplo.com"
+                  required
                 />
               </div>
               {errors.email && (
@@ -151,6 +172,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="••••••••"
+                  required
                 />
               </div>
               {errors.password && (
@@ -177,6 +199,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="••••••••"
+                  required
                 />
               </div>
               {errors.confirmPassword && (
@@ -204,6 +227,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="12345678900"
                   maxLength={11}
+                  required
                 />
               </div>
               {errors.cpf && (

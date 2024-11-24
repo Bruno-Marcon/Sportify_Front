@@ -1,70 +1,70 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { X } from 'lucide-react';
-import { useStore } from '../store/useStore';
 
-const BookingModal: React.FC = () => {
-  const {
-    selectedCourt,
-    isModalOpen,
-    setModalOpen,
-    setSelectedCourt,
-    addBooking,
-    setShowShareModal,
-    setCurrentBookingLink,
-  } = useStore();
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]); // Alterado para múltiplos horários
+interface BookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  court: {
+    id: string;
+    name: string;
+    availability?: string[]; // Torna `availability` opcional
+    maxPlayers: number;
+    price: number;
+  } | null; // Permite que court seja nulo
+  onBookingConfirm: (booking: {
+    courtId: string;
+    times: string[];
+    isPublic: boolean;
+  }) => void;
+}
+
+const BookingModal: React.FC<BookingModalProps> = ({
+  isOpen,
+  onClose,
+  court,
+  onBookingConfirm,
+}) => {
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
 
-  const handleClose = () => {
-    setModalOpen(false);
-    setSelectedCourt(null);
-    setSelectedTimes([]);
-    setIsPublic(true);
-  };
+  if (!court) {
+    return null; // Não renderiza o modal se a quadra não for válida
+  }
 
   const handleTimeToggle = (time: string) => {
     if (selectedTimes.includes(time)) {
-      setSelectedTimes(selectedTimes.filter((t) => t !== time)); // Remove o horário se já estiver selecionado
+      setSelectedTimes(selectedTimes.filter((t) => t !== time)); // Remove o horário
     } else {
-      setSelectedTimes([...selectedTimes, time]); // Adiciona o horário se não estiver selecionado
+      setSelectedTimes([...selectedTimes, time]); // Adiciona o horário
     }
   };
 
   const handleBooking = () => {
-    if (!selectedCourt || selectedTimes.length === 0) return;
-
-    const bookingId = Math.random().toString(36).substr(2, 9);
-    const booking = {
-      id: bookingId,
-      courtId: selectedCourt.id,
-      times: selectedTimes, // Salva os horários selecionados
+    if (selectedTimes.length === 0) return;
+    onBookingConfirm({
+      courtId: court.id,
+      times: selectedTimes,
       isPublic,
-      maxPlayers: selectedCourt.maxPlayers,
-      currentPlayers: 0,
-      participants: [],
-    };
-
-    const baseUrl = window.location.origin;
-    const shareLink = `${baseUrl}/booking/${bookingId}`;
-
-    addBooking(booking);
-    setCurrentBookingLink(shareLink);
+    });
     handleClose();
-    setShowShareModal(true);
   };
 
-  if (!selectedCourt) return null;
+  const handleClose = () => {
+    setSelectedTimes([]);
+    setIsPublic(true);
+    onClose();
+  };
 
   return (
-    <Dialog open={isModalOpen} onClose={handleClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto w-full max-w-4xl transform rounded-2xl bg-white p-8 shadow-lg transition-all sm:p-10">
           {/* Header */}
           <div className="flex items-center justify-between border-b pb-4">
             <Dialog.Title className="text-2xl font-semibold text-gray-900">
-               {selectedCourt.name}
+              {court.name}
             </Dialog.Title>
             <button
               onClick={handleClose}
@@ -82,19 +82,23 @@ const BookingModal: React.FC = () => {
                 Selecione o(s) horário(s)
               </label>
               <div className="flex flex-wrap gap-4">
-                {selectedCourt.availability.map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => handleTimeToggle(time)}
-                    className={`rounded-full px-6 py-2 text-sm font-medium transition ${
-                      selectedTimes.includes(time)
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                    }`}
-                  >
-                    {time}
-                  </button>
-                ))}
+                {court.availability && court.availability.length > 0 ? (
+                  court.availability.map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => handleTimeToggle(time)}
+                      className={`rounded-full px-6 py-2 text-sm font-medium transition ${
+                        selectedTimes.includes(time)
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-600">Nenhum horário disponível.</p>
+                )}
               </div>
             </div>
 
@@ -112,7 +116,7 @@ const BookingModal: React.FC = () => {
                     onChange={() => setIsPublic(true)}
                     className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <span className="text-gray-700">Publico</span>
+                  <span className="text-gray-700">Público</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -131,7 +135,7 @@ const BookingModal: React.FC = () => {
           {/* Price */}
           <div className="mt-6">
             <p className="text-lg font-medium text-gray-900">
-              Valor: ${selectedCourt.pricePerHour}/h
+              Valor: R$ {(court.price / 100).toFixed(2)}/h
             </p>
           </div>
 
@@ -145,7 +149,7 @@ const BookingModal: React.FC = () => {
             </button>
             <button
               onClick={handleBooking}
-              disabled={selectedTimes.length === 0} // Desabilita se nenhum horário for selecionado
+              disabled={selectedTimes.length === 0}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
             >
               Confirmar Agendamento

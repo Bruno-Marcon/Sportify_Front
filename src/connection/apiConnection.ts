@@ -93,9 +93,9 @@ interface LoginResponse {
     }
   };
 
-  export const getCourts = async (): Promise<any> => {
-    const endpoint = "api/v1/courts"; // Endpoint específico para quadras
-    const token = localStorage.getItem("token"); // Obtenha o token do localStorage
+  export const getCourts = async (): Promise<any[]> => {
+    const endpoint = "api/v1/courts";
+    const token = localStorage.getItem("token");
   
     if (!token) {
       throw new Error("Usuário não autenticado. Token ausente.");
@@ -106,7 +106,7 @@ interface LoginResponse {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Token no cabeçalho Authorization
+          Authorization: `Bearer ${token}`,
         },
       });
   
@@ -115,9 +115,32 @@ interface LoginResponse {
       }
   
       const result = await response.json();
-      return result.data; // Retorna os dados da API
+  
+      // Validar se `result.data` é um array antes de processar
+      if (!Array.isArray(result.data)) {
+        throw new Error("Resposta inesperada: dados de quadras ausentes.");
+      }
+  
+      // Processar e retornar quadras formatadas
+      return result.data.map((court: any) => {
+        if (!court.attributes) {
+          throw new Error(`Quadra inválida: ${JSON.stringify(court)}`);
+        }
+  
+        return {
+          id: court.id,
+          name: court.attributes.name || "Nome não especificado",
+          maxPlayers: court.attributes.max_players || 0,
+          category: court.attributes.category || "Categoria desconhecida",
+          description: court.attributes.description || "Sem descrição",
+          price: court.attributes.price || 0,
+          status: court.attributes.status || "Indisponível",
+        };
+      });
     } catch (error) {
       console.error("Erro ao buscar quadras:", error);
       throw error;
     }
   };
+  
+  

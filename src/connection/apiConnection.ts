@@ -230,4 +230,57 @@ interface LoginResponse {
     }
   };
   
+  interface PublicBookingResponse {
+    data: {
+      id: string;
+      type: string;
+      attributes: {
+        starts_on: string;
+        ends_on: string;
+        total_value: number;
+        status: string;
+        share_token: string;
+        public: boolean;
+        user: {
+          id: number;
+          email: string;
+        };
+        court: {
+          id: number;
+          name: string;
+          category: string;
+          price: number;
+        };
+        players: any[];
+      };
+    }[];
+  }
   
+  export const fetchPublicBookings = async (): Promise<PublicBookingResponse> => {
+    const endpoint = `api/v1/bookings?filter[public_eq]=true`;
+    const token = localStorage.getItem('token'); // Obtém o token do localStorage
+  
+    if (!token) {
+      throw new Error('Usuário não autenticado. Token ausente.');
+    }
+  
+    try {
+      const response = await fetch(`${BASE_URL}/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho Authorization
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      return result; // Retorna o resultado como está, o formato já é adequado
+    } catch (error) {
+      console.error('Erro ao buscar reservas públicas:', error);
+      throw error;
+    }
+  };

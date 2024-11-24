@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { X, User } from 'lucide-react';
-import { useStore } from '../store/useStore';
 
 interface JoinModalProps {
   isOpen: boolean;
   onClose: () => void;
-  booking: any;
-  court: any;
+  booking: {
+    time: string;
+    currentPlayers: number;
+    maxPlayers: number;
+    participants: { name: string; position: string }[];
+  };
+  court: {
+    name: string;
+    category: string;
+  };
 }
 
 const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }) => {
-  const { user } = useStore(); // Assumindo que o estado do usuário é armazenado no store
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [selectedPosition, setSelectedPosition] = useState<string>('');
 
   const handleJoin = () => {
@@ -28,22 +34,31 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
       email,
       position: selectedPosition,
     };
-    console.log(`Usuário entrou:`, newParticipant);
+    console.log(`Novo participante:`, newParticipant);
+
+    // Limpa o modal e fecha
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setName('');
+    setEmail('');
+    setSelectedPosition('');
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b pb-4">
             <Dialog.Title className="text-lg font-semibold text-gray-900">
-              Entrar na Reserva
+              Juntar-se à Reserva
             </Dialog.Title>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
@@ -52,27 +67,30 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
 
           {/* Modal Content */}
           <div className="mt-4">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Quadra:</span> {court.name}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Esporte:</span> {court.sport}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Horário:</span> {booking.time}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Jogadores:</span> {booking.currentPlayers}/{booking.maxPlayers}
-            </p>
+            {/* Court Information */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Quadra:</span> {court.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Esporte:</span> {court.category}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Horário:</span> {booking.time}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Jogadores:</span> {booking.currentPlayers}/{booking.maxPlayers}
+              </p>
+            </div>
 
-            {/* List of confirmed players */}
-            <div className="mt-4">
+            {/* Participants List */}
+            <div className="mb-4">
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Jogadores Confirmados:
               </h3>
               <ul className="space-y-2">
                 {booking.participants && booking.participants.length > 0 ? (
-                  booking.participants.map((participant: any, index: number) => (
+                  booking.participants.map((participant, index) => (
                     <li
                       key={index}
                       className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-gray-700"
@@ -88,32 +106,30 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
             </div>
 
             {/* User Information */}
-            {!user && (
-              <div className="mt-4">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Nome:
-                </label>
-                <input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                  placeholder="Digite seu nome"
-                />
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Nome:
+              </label>
+              <input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                placeholder="Digite seu nome"
+              />
 
-                <label htmlFor="email" className="mt-4 block text-sm font-medium text-gray-700">
-                  E-mail:
-                </label>
-                <input
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                  placeholder="Digite seu e-mail"
-                  type="email"
-                />
-              </div>
-            )}
+              <label htmlFor="email" className="mt-4 block text-sm font-medium text-gray-700">
+                E-mail:
+              </label>
+              <input
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                placeholder="Digite seu e-mail"
+                type="email"
+              />
+            </div>
 
             {/* Position Selection */}
             <div className="mt-4">
@@ -137,7 +153,7 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
           {/* Modal Footer */}
           <div className="mt-6 flex justify-end gap-4">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
             >
               Cancelar

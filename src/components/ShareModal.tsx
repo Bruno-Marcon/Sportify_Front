@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Copy, Check, X } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useLocation } from 'react-router-dom';
 
-const ShareModal: React.FC = () => {
-  const { showShareModal, setShowShareModal, currentBookingLink } = useStore();
+interface ShareModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  bookingLink?: string;
+}
+
+const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink }) => {
   const [copied, setCopied] = useState(false);
+  const location = useLocation();
 
-  const handleClose = () => {
-    setShowShareModal(false);
-    setCopied(false);
-  };
+  const currentBookingLink =
+    bookingLink || `${window.location.origin}${location.pathname}`;
 
   const handleCopy = async () => {
     if (currentBookingLink) {
@@ -20,8 +24,13 @@ const ShareModal: React.FC = () => {
     }
   };
 
+  const handleClose = () => {
+    setCopied(false);
+    onClose();
+  };
+
   return (
-    <Dialog open={showShareModal} onClose={handleClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg transition-all sm:p-8">
@@ -47,7 +56,7 @@ const ShareModal: React.FC = () => {
               <input
                 type="text"
                 readOnly
-                value={currentBookingLink || ''}
+                value={currentBookingLink}
                 className="flex-1 bg-transparent text-sm text-gray-700 focus:outline-none"
               />
               <button

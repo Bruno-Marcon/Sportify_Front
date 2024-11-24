@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { Mail, Lock, User, X, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, X, AlertCircle} from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Importando useNavigate
 import { createUser } from '../connection/apiConnection';
 
@@ -10,25 +10,28 @@ interface RegisterModalProps {
 }
 
 interface FormData {
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
-  cpf: string;
+  document: string;
 }
 
 interface FormErrors {
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
-  cpf?: string;
+  document?: string;
 }
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState<FormData>({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    cpf: '',
+    document: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -54,8 +57,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
       newErrors.confirmPassword = 'As senhas não correspondem.';
     }
 
-    if (!isValidCPF(formData.cpf)) {
-      newErrors.cpf = 'Por gentileza, informe um CPF válido (11 dígitos).';
+    if (!isValidCPF(formData.document)) {
+      newErrors.document = 'Por gentileza, informe um CPF válido (11 dígitos).';
     }
 
     setErrors(newErrors);
@@ -75,20 +78,22 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
       console.log('Payload enviado:', JSON.stringify(formData, null, 2));
 
       const user = await createUser(
+        formData.name,
         formData.email,
         formData.password,
         formData.confirmPassword,
-        formData.cpf
+        formData.document
       );
 
       console.log('Usuário criado:', user);
 
       // Limpar formulário
       setFormData({
+        name: '',
         email: '',
         password: '',
         confirmPassword: '',
-        cpf: '',
+        document: '',
       });
 
       // Fechar modal e redirecionar para login
@@ -129,6 +134,32 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+              <label htmlFor="register-name" className="block text-sm font-medium text-gray-700">
+                Nome
+              </label>
+              <div className="relative mt-1">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="register-name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
+                  placeholder="Nome"
+                  required
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.name}
+                </p>
+              )}
+            </div>
             <div>
               <label htmlFor="register-email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -219,10 +250,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="cpf"
-                  name="cpf"
+                  id="document"
+                  name="document"
                   type="text"
-                  value={formData.cpf}
+                  value={formData.document}
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="12345678900"
@@ -230,10 +261,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   required
                 />
               </div>
-              {errors.cpf && (
+              {errors.document && (
                 <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
                   <AlertCircle className="h-4 w-4" />
-                  {errors.cpf}
+                  {errors.document}
                 </p>
               )}
             </div>

@@ -5,25 +5,28 @@ interface UserResponse {
     id: string;
     type: string;
     attributes: {
-        email: string;
-        created_at: string;
+      email: string,
+      name: string,
+      document: string 
     };
 }
 
 export const createUser = async (
+    name: string,
     email: string, 
     password: string, 
     passwordConfirmation: string,
-    cpf: string
+    document: string
 ): Promise<UserResponse> => {
     const endpoint = "api/v1/users";
 
     // Crie o payload no mesmo formato usado no Insomnia
     const userData = {
+        name,
         email, // Não encapsula em "user"
         password,
         password_confirmation: passwordConfirmation,
-        cpf,
+        document,
     };
 
     console.log("Payload enviado para API:", JSON.stringify(userData, null, 2)); // Log do payload
@@ -86,6 +89,35 @@ interface LoginResponse {
       return result as LoginResponse; // Retorna o tipo esperado
     } catch (error) {
       console.error("Erro ao fazer login:", error);
+      throw error;
+    }
+  };
+
+  export const getCourts = async (): Promise<any> => {
+    const endpoint = "api/v1/courts"; // Endpoint específico para quadras
+    const token = localStorage.getItem("token"); // Obtenha o token do localStorage
+  
+    if (!token) {
+      throw new Error("Usuário não autenticado. Token ausente.");
+    }
+  
+    try {
+      const response = await fetch(`${BASE_URL}/${endpoint}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Token no cabeçalho Authorization
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      return result.data; // Retorna os dados da API
+    } catch (error) {
+      console.error("Erro ao buscar quadras:", error);
       throw error;
     }
   };

@@ -8,7 +8,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ isAuthenticated, children }) => {
   if (!isAuthenticated) {
-    // Redireciona para a página de login se não estiver autenticado
     return <Navigate to="/login" />;
   }
 

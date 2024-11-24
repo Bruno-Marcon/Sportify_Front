@@ -93,6 +93,53 @@ interface LoginResponse {
     }
   };
 
+  interface AvailableTimesResponse {
+    courtId: number;
+    date: string;
+    availableTimes: {
+      start: string;
+      end: string;
+    }[];
+  }
+  
+  export const getAvailableTimes = async (courtId: number): Promise<AvailableTimesResponse> => {
+    const endpoint = `api/v1/bookings/${courtId}/available_times`;
+    const token = localStorage.getItem('token'); // Obtém o token do localStorage
+  
+    if (!token) {
+      throw new Error('Usuário não autenticado. Token ausente.');
+    }
+  
+    try {
+      const response = await fetch(`${BASE_URL}/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho Authorization
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+  
+      // Formata os dados recebidos
+      return {
+        courtId: result.court_id,
+        date: result.date,
+        availableTimes: result.available_times.map((time: { start: string; end: string }) => ({
+          start: time.start,
+          end: time.end,
+        })),
+      };
+    } catch (error) {
+      console.error('Erro ao buscar horários disponíveis:', error);
+      throw error;
+    }
+  };
+
   export const getCourts = async (): Promise<any[]> => {
     const endpoint = "api/v1/courts";
     const token = localStorage.getItem("token");
@@ -139,6 +186,46 @@ interface LoginResponse {
       });
     } catch (error) {
       console.error("Erro ao buscar quadras:", error);
+      throw error;
+    }
+  };
+
+  interface CreateBookingParams {
+    startsOn: string; // Formato ISO (exemplo: "2022-11-25T20:00:00Z")
+    courtId: number;
+    isPublic: boolean;
+  }
+  
+  export const createBooking = async (params: CreateBookingParams): Promise<any> => {
+    const endpoint = "api/v1/bookings";
+    const token = localStorage.getItem("token"); // Obtenha o token do localStorage
+  
+    if (!token) {
+      throw new Error("Usuário não autenticado. Token ausente.");
+    }
+  
+    try {
+      const response = await fetch(`${BASE_URL}/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Token de autenticação no cabeçalho
+        },
+        body: JSON.stringify({
+          starts_on: params.startsOn,
+          court_id: params.courtId,
+          public: params.isPublic,
+        }),
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Erro na requisição: ${error.message || response.statusText}`);
+      }
+  
+      return await response.json(); // Retorna os dados da resposta
+    } catch (error) {
+      console.error("Erro ao criar reserva:", error);
       throw error;
     }
   };

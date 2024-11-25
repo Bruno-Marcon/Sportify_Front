@@ -261,8 +261,11 @@ export const createBooking = async (params: CreateBookingParams): Promise<Create
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Erro na requisição: ${error.message || response.statusText}`);
+      const errorData = await response.json();
+      throw {
+        status: response.status,
+        message: errorData.message || response.statusText,
+      };
     }
 
     const result: CreateBookingResponse = await response.json();

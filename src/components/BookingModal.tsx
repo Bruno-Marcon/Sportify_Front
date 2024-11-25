@@ -3,16 +3,14 @@ import { Dialog, Switch } from '@headlessui/react';
 import { X, AlertCircle } from 'lucide-react';
 import { getAvailableTimes, createBooking } from '../connection/apiConnection';
 import ShareModal from './ShareModal';
+import { Court, AvailableTimesResponse, CreateBookingResponse } from '../types/index';
+import { toast } from 'react-toastify';
+
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  court: {
-    id: string;
-    name: string;
-    maxPlayers: number;
-    price: number;
-  } | null;
+  court: Court | null;
 }
 
 const Spinner: React.FC<{ size?: number }> = ({ size = 24 }) => (
@@ -50,19 +48,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
   const [bookingLink, setBookingLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Mover a função fetchAvailableTimes para fora do useEffect
   const fetchAvailableTimes = async () => {
     if (!court) return;
-  
+
     setIsLoading(true);
     setErrorMessage(null);
-  
+
     try {
-      const data = await getAvailableTimes(parseInt(court.id, 10));
-      setAvailableTimes(data.availableTimes); // Certifique-se de que 'availableTimes' é o nome correto
-    } catch (error) {
+      const data: AvailableTimesResponse = await getAvailableTimes(court.id);
+      setAvailableTimes(data.availableTimes);
+    } catch (error: unknown) {
       console.error('Erro ao buscar horários disponíveis:', error);
-      setErrorMessage('Erro ao carregar horários disponíveis.');
+
+      if (error instanceof Error) {
+        setErrorMessage(error.message || 'Erro ao carregar horários disponíveis.');
+      } else {
+        setErrorMessage('Erro ao carregar horários disponíveis.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -86,53 +88,61 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
     try {
       const bookingData = {
         startsOn: selectedTime,
-        courtId: parseInt(court!.id, 10),
+        courtId: court!.id,
         isPublic,
       };
 
       // Chama a API para criar a reserva
-      const response = await createBooking(bookingData);
+      const response: CreateBookingResponse = await createBooking(bookingData);
 
       // Exibe o ShareModal
-      const shareLink = response.shareLink || `${window.location.origin}/bookings/${response.id}`;
+      const bookingId = response.data.id;
+      const shareToken = response.data.attributes.share_token;
+      const shareLink = `${window.location.origin}/bookings/${bookingId}?token=${shareToken}`;
       setBookingLink(shareLink);
       setShowShareModal(true);
 
-      // Fecha o BookingModal
-      onClose();
 
-      // Limpa os estados relacionados ao BookingModal
-      setAvailableTimes([]);
-      setSelectedTime(null);
-      setIsPublic(true);
-      setErrorMessage(null);
-    } catch (error) {
+      toast.success('Reserva realizada com sucesso!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'colored',
+      });
+
+      // Fecha o BookingModal
+      handleClose();
+    } catch (error: unknown) {
       console.error('Erro ao criar reserva:', error);
 
-      if (error.response && error.response.data) {
-        const status = error.response.status;
-        const serverMessage = error.response.data.message;
+       if (typeof error === 'object' && error !== null && 'status' in error) {
+      const status = (error as { status: number }).status;
+      const serverMessage = (error as unknown as { message: string }).message;
 
-        if (status === 422) {
-          // Erro de horário indisponível ou dados inválidos
-          setErrorMessage(
-            serverMessage ||
-              'O horário selecionado não está mais disponível. Por favor, escolha outro horário.'
-          );
+      if (status === 422) {
+        setErrorMessage(
+          serverMessage ||
+            'O horário selecionado não está mais disponível. Por favor, escolha outro horário.'
+        );
 
-          // Atualiza a lista de horários disponíveis
-          await fetchAvailableTimes();
-        } else {
-          // Outros erros
-          setErrorMessage(serverMessage || 'Erro ao realizar a reserva.');
-        }
+        // Atualiza a lista de horários disponíveis
+        await fetchAvailableTimes();
       } else {
-        setErrorMessage('Erro ao realizar a reserva. Verifique sua conexão e tente novamente.');
+        setErrorMessage(serverMessage || 'Erro ao realizar a reserva.');
       }
-    } finally {
-      setIsSubmitting(false);
+    } else if (error instanceof Error) {
+      setErrorMessage(error.message || 'Erro ao realizar a reserva.');
+    } else {
+      setErrorMessage('Erro ao realizar a reserva. Verifique sua conexão e tente novamente.');
     }
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleClose = () => {
     setAvailableTimes([]);
@@ -144,7 +154,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
 
   const formattedPrice = court
     ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-        court.price / 100
+        court.price
       )
     : '';
 
@@ -186,36 +196,36 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
               </div>
             )}
 
-              <div className="mt-6">
-                {isLoading ? (
-                  <div className="flex justify-center">
-                    <Spinner />
+            <div className="mt-6">
+              {isLoading ? (
+                <div className="flex justify-center">
+                  <Spinner />
+                </div>
+              ) : availableTimes.length > 0 ? (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Selecione um horário
+                  </label>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                    {availableTimes.map((time) => (
+                      <button
+                        key={time.start}
+                        onClick={() => setSelectedTime(time.start)}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                          selectedTime === time.start
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {time.start} - {time.end}
+                      </button>
+                    ))}
                   </div>
-                ) : availableTimes.length > 0 ? (
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Selecione um horário
-                    </label>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                      {availableTimes.map((time) => (
-                        <button
-                          key={time.start}
-                          onClick={() => setSelectedTime(time.start)}
-                          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                            selectedTime === time.start
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                          }`}
-                        >
-                          {time.start} - {time.end}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-600">Nenhum horário disponível.</p>
-                )}
-              </div>
+                </div>
+              ) : (
+                <p className="text-center text-gray-600">Nenhum horário disponível.</p>
+              )}
+            </div>
 
             <div className="mt-6">
               <Switch.Group>

@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext'; // Importe o AuthContext
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext); // Use o useContext para acessar logout
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove o token ou qualquer dado de autenticação
+    logout(); // Chama a função logout do contexto
     navigate('/login'); // Redireciona para a página de login
   };
 

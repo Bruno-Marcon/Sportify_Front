@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { Mail, Lock, CheckCircle } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../connection/apiConnection';
 import { toast } from 'react-toastify';
+import { AuthContext } from '../context/AuthContext';
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +14,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
+  const { login } = useContext(AuthContext); // Importa a função login do contexto
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +26,8 @@ const Login: React.FC = () => {
 
       console.log('Login bem-sucedido:', response);
 
-      localStorage.setItem('token', response.token);
+      // Use a função login do contexto
+      login(response.token);
 
       // Exibir a notificação de sucesso
       toast.success('Login realizado com sucesso!', {

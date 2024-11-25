@@ -6,7 +6,7 @@ import BookingModal from './BookingModal';
 interface Court {
   id: string;
   name: string;
-  maxPlayers: number;
+  max_Players: number;
   category: string;
   description: string;
   price: number;
@@ -27,7 +27,7 @@ const CourtList: React.FC = () => {
         const formattedCourts = data.map((court) => ({
           id: court.id,
           name: court.name || 'Quadra sem nome',
-          maxPlayers: court.maxPlayers || 0,
+          max_Players: court.max_Players || 0,
           category: court.category || 'Categoria desconhecida',
           description: court.description || 'Sem descrição',
           price: court.price || 0,
@@ -73,7 +73,7 @@ const CourtList: React.FC = () => {
                 <p className="mt-2 text-sm text-gray-600 line-clamp-3">{court.description}</p>
                 <div className="mt-4 flex items-center text-gray-600">
                   <Users className="h-5 w-5" />
-                  <span className="ml-2 text-sm">Máximo {court.maxPlayers} jogadores</span>
+                  <span className="ml-2 text-sm">Máximo {court.max_Players} jogadores</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm text-gray-800">

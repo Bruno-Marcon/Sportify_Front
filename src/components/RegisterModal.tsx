@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { Mail, Lock, User, X, AlertCircle} from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Importando useNavigate
+import { Mail, Lock, User, X, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { createUser } from '../connection/apiConnection';
+import { toast } from 'react-toastify';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate(); // Inicializando useNavigate
+  const navigate = useNavigate();
 
   const isValidCPF = (cpf: string): boolean => {
     return /^\d{11}$/.test(cpf);
@@ -44,6 +45,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'O nome é obrigatório.';
+    }
 
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       newErrors.email = 'Por gentileza, informe um email válido.';
@@ -77,7 +82,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
     try {
       console.log('Payload enviado:', JSON.stringify(formData, null, 2));
 
-      const user = await createUser(
+      await createUser(
         formData.name,
         formData.email,
         formData.password,
@@ -85,7 +90,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
         formData.document
       );
 
-      console.log('Usuário criado:', user);
+      console.log('Usuário criado com sucesso.');
+
+      // Exibir mensagem de sucesso com Toast
+      toast.success('Conta criada com sucesso! Redirecionando...', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
 
       // Limpar formulário
       setFormData({
@@ -98,9 +110,17 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
       // Fechar modal e redirecionar para login
       onClose();
-      navigate('/login'); // Redireciona para a página de login
+      navigate('/login');
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
+
+      // Exibir mensagem de erro com Toast
+      toast.error('Erro ao criar a conta. Por favor, tente novamente.', {
+        position: 'top-right',
+        autoClose: 5000,
+        theme: 'colored',
+      });
+
       setErrors({ email: 'Ocorreu um erro ao criar a conta. Tente novamente.' });
     } finally {
       setIsLoading(false);

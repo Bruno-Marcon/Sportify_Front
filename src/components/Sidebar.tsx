@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Calendar, User, Award, LogOut, Menu } from 'lucide-react';
+import { NavLink} from 'react-router-dom';
+import { Home, Calendar, User, Award,Menu } from 'lucide-react';
 
 interface NavItem {
   icon: React.FC<{ className?: string }>;
@@ -9,7 +9,6 @@ interface NavItem {
 }
 
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false); // Estado para o menu móvel
 
   const navItems: NavItem[] = [
@@ -19,10 +18,7 @@ const Sidebar: React.FC = () => {
     { icon: Award, label: 'Ranking', path: '/leaderboard' },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove o token ou qualquer dado de autenticação
-    navigate('/login'); // Redireciona para a página de login
-  };
+ 
 
   return (
     <>
@@ -40,7 +36,7 @@ const Sidebar: React.FC = () => {
       {/* Barra Lateral */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-gray-900 text-gray-300 shadow-lg transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
         } sm:relative sm:translate-x-0`}
       >
         <div className="flex h-full flex-col justify-between">
@@ -70,20 +66,6 @@ const Sidebar: React.FC = () => {
                 </NavLink>
               ))}
             </nav>
-          </div>
-
-          {/* Logout */}
-          <div className="border-t border-gray-800 p-4">
-            <button
-              onClick={() => {
-                handleLogout();
-                setIsOpen(false); // Fecha o menu ao fazer logout
-              }}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-300 transition hover:bg-gray-800 hover:text-emerald-500"
-            >
-              <LogOut className="h-5 w-5 text-emerald-500" />
-              Sair
-            </button>
           </div>
         </div>
       </aside>

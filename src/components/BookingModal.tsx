@@ -50,24 +50,25 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
   const [bookingLink, setBookingLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Mover a função fetchAvailableTimes para fora do useEffect
+  const fetchAvailableTimes = async () => {
+    if (!court) return;
+  
+    setIsLoading(true);
+    setErrorMessage(null);
+  
+    try {
+      const data = await getAvailableTimes(parseInt(court.id, 10));
+      setAvailableTimes(data.availableTimes); // Certifique-se de que 'availableTimes' é o nome correto
+    } catch (error) {
+      console.error('Erro ao buscar horários disponíveis:', error);
+      setErrorMessage('Erro ao carregar horários disponíveis.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAvailableTimes = async () => {
-      if (!court) return;
-
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      try {
-        const data = await getAvailableTimes(parseInt(court.id, 10));
-        setAvailableTimes(data.availableTimes);
-      } catch (error) {
-        console.error('Erro ao buscar horários disponíveis:', error);
-        setErrorMessage('Erro ao carregar horários disponíveis.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (isOpen) {
       fetchAvailableTimes();
     }
@@ -89,14 +90,45 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
         isPublic,
       };
 
+      // Chama a API para criar a reserva
       const response = await createBooking(bookingData);
-      const shareLink = `${window.location.origin}/bookings/${response.id}`;
+
+      // Exibe o ShareModal
+      const shareLink = response.shareLink || `${window.location.origin}/bookings/${response.id}`;
       setBookingLink(shareLink);
       setShowShareModal(true);
-      handleClose();
+
+      // Fecha o BookingModal
+      onClose();
+
+      // Limpa os estados relacionados ao BookingModal
+      setAvailableTimes([]);
+      setSelectedTime(null);
+      setIsPublic(true);
+      setErrorMessage(null);
     } catch (error) {
       console.error('Erro ao criar reserva:', error);
-      setErrorMessage('Erro ao realizar a reserva. Tente novamente.');
+
+      if (error.response && error.response.data) {
+        const status = error.response.status;
+        const serverMessage = error.response.data.message;
+
+        if (status === 422) {
+          // Erro de horário indisponível ou dados inválidos
+          setErrorMessage(
+            serverMessage ||
+              'O horário selecionado não está mais disponível. Por favor, escolha outro horário.'
+          );
+
+          // Atualiza a lista de horários disponíveis
+          await fetchAvailableTimes();
+        } else {
+          // Outros erros
+          setErrorMessage(serverMessage || 'Erro ao realizar a reserva.');
+        }
+      } else {
+        setErrorMessage('Erro ao realizar a reserva. Verifique sua conexão e tente novamente.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -154,36 +186,36 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
               </div>
             )}
 
-            <div className="mt-6">
-              {isLoading ? (
-                <div className="flex justify-center">
-                  <Spinner />
-                </div>
-              ) : availableTimes.length > 0 ? (
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Selecione um horário
-                  </label>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                    {availableTimes.map((time) => (
-                      <button
-                        key={time.start}
-                        onClick={() => setSelectedTime(time.start)}
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                          selectedTime === time.start
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                        }`}
-                      >
-                        {time.start} - {time.end}
-                      </button>
-                    ))}
+              <div className="mt-6">
+                {isLoading ? (
+                  <div className="flex justify-center">
+                    <Spinner />
                   </div>
-                </div>
-              ) : (
-                <p className="text-center text-gray-600">Nenhum horário disponível.</p>
-              )}
-            </div>
+                ) : availableTimes.length > 0 ? (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      Selecione um horário
+                    </label>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                      {availableTimes.map((time) => (
+                        <button
+                          key={time.start}
+                          onClick={() => setSelectedTime(time.start)}
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                            selectedTime === time.start
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                          }`}
+                        >
+                          {time.start} - {time.end}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-600">Nenhum horário disponível.</p>
+                )}
+              </div>
 
             <div className="mt-6">
               <Switch.Group>
@@ -244,11 +276,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, court }) =
       </Dialog>
 
       {/* Modal de Compartilhamento */}
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        bookingLink={bookingLink || ''}
-      />
+      {bookingLink && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          bookingLink={bookingLink}
+        />
+      )}
     </>
   );
 };

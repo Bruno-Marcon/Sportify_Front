@@ -1,5 +1,3 @@
-// src/components/CourtList.tsx
-
 import React, { useState, useEffect } from 'react';
 import { getCourts } from '../connection/apiConnection';
 import BookingModal from './BookingModal';
@@ -14,11 +12,10 @@ const CourtList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Estados para paginação
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const limit = 10; // Número de itens por página
+  const limit = 10;
 
   useEffect(() => {
     const fetchCourts = async () => {
@@ -57,7 +54,6 @@ const CourtList: React.FC = () => {
     setCurrentPage(page);
   };
 
-  // Opcional: Limitar o número de botões de página exibidos
   const getPageNumbers = () => {
     const maxPageButtons = 5;
     let startPage = Math.max(currentPage - Math.floor(maxPageButtons / 2), 1);
@@ -123,14 +119,11 @@ const CourtList: React.FC = () => {
             ))}
           </div>
 
-          {/* Controles de Paginação */}
           <div className="mt-8 flex flex-col items-center space-y-4">
-            {/* Informações de Paginação */}
             <p className="text-sm text-gray-600">
               Mostrando {courts.length} de {totalCount} quadras
             </p>
 
-            {/* Botões de Navegação */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={handlePreviousPage}
@@ -144,7 +137,6 @@ const CourtList: React.FC = () => {
                 Anterior
               </button>
 
-              {/* Exibir números das páginas */}
               <div className="flex space-x-2">
                 {getPageNumbers().map((page) => (
                   <button
@@ -177,7 +169,6 @@ const CourtList: React.FC = () => {
         </>
       )}
 
-      {/* Modal de Reserva */}
       {isModalOpen && selectedCourt && (
         <BookingModal
           isOpen={isModalOpen}
@@ -187,7 +178,6 @@ const CourtList: React.FC = () => {
         />
       )}
 
-      {/* Modal de Compartilhamento */}
       {shareModalLink && (
         <ShareModal
           isOpen={!!shareModalLink}

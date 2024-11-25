@@ -3,7 +3,6 @@ import { Users } from 'lucide-react';
 import { fetchPublicBookings } from '../connection/apiConnection';
 import JoinModal from './JoinModal';
 
-// Definição dos tipos esperados
 interface Participant {
   name: string;
   position: string;

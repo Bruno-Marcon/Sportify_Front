@@ -8,8 +8,8 @@ interface ShareModalProps {
   onClose: () => void;
   bookingLink: string;
   location: string;
-  date: string; // Representa a data do evento (e.g., "2024-11-25")
-  time: string; // Representa a hora do evento (e.g., "14:00")
+  date: string;
+  time: string;
   service: string;
 }
 
@@ -49,13 +49,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink, l
   
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      {/* Fundo escuro */}
       <Dialog.Overlay className="fixed inset-0 bg-black/50" />
 
-      {/* Container do modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg">
-          {/* Header */}
           <div className="flex items-center justify-between border-b pb-4">
             <Dialog.Title className="text-xl font-semibold">Compartilhar Agendamento</Dialog.Title>
             <button
@@ -66,7 +63,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink, l
             </button>
           </div>
 
-          {/* Content */}
           <div className="mt-6">
             <p className="text-sm text-gray-600 mb-4">
               Use o link abaixo para compartilhar o agendamento com outros participantes:
@@ -108,7 +104,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink, l
             </div>
           </div>
 
-          {/* Footer */}
           <div className="mt-6 flex justify-end">
             <button
               onClick={onClose}

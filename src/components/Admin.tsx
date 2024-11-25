@@ -227,8 +227,7 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Função para excluir uma reserva via API
-  const handleDeleteBooking = async (bookingId: number) => { // Alterado para number
+  const handleDeleteBooking = async (bookingId: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta reserva?')) {
       try {
         await deleteBooking(bookingId);
@@ -246,11 +245,11 @@ const Admin: React.FC = () => {
     }
   };
 
-  console.log('Quadras no estado:', courts); // Log para verificar o estado das quadras
+  console.log('Quadras no estado:', courts);
 
   return (
     <div className="p-6">
-      {/* Exibir o papel do usuário (Opcional) */}
+    
       <div className="mb-4 text-right text-gray-600">
         {user && <span>Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>}
       </div>
@@ -300,7 +299,6 @@ const Admin: React.FC = () => {
             </button>
           </div>
 
-          {/* Estado de Carregamento e Erro */}
           {isLoadingCourts ? (
             <p className="text-center text-gray-700">Carregando quadras...</p>
           ) : errorCourts ? (
@@ -348,14 +346,11 @@ const Admin: React.FC = () => {
                 ))}
               </div>
 
-              {/* Controles de Paginação para Quadras */}
               <div className="mt-8 flex flex-col items-center space-y-4">
-                {/* Informações de Paginação */}
                 <p className="text-sm text-gray-600">
                   Mostrando {courts.length} de {totalCountCourts} quadras
                 </p>
 
-                {/* Botões de Navegação */}
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handlePreviousPageCourts}
@@ -369,7 +364,6 @@ const Admin: React.FC = () => {
                     Anterior
                   </button>
 
-                  {/* Exibir números das páginas */}
                   <div className="flex space-x-2">
                     {getPageNumbersCourts().map((page) => (
                       <button
@@ -420,7 +414,6 @@ const Admin: React.FC = () => {
             </button>
           </div>
 
-          {/* Estado de Carregamento e Erro para Reservas */}
           {isLoadingBookings ? (
             <p className="text-center text-gray-700">Carregando reservas...</p>
           ) : errorBookings ? (
@@ -492,14 +485,11 @@ const Admin: React.FC = () => {
                 </div>
               </div>
 
-              {/* Controles de Paginação para Reservas */}
               <div className="mt-8 flex flex-col items-center space-y-4">
-                {/* Informações de Paginação */}
                 <p className="text-sm text-gray-600">
                   Mostrando {bookings.length} de {totalCountBookings} reservas
                 </p>
 
-                {/* Botões de Navegação */}
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handlePreviousPageBookings}
@@ -513,7 +503,6 @@ const Admin: React.FC = () => {
                     Anterior
                   </button>
 
-                  {/* Exibir números das páginas */}
                   <div className="flex space-x-2">
                     {getPageNumbersBookings().map((page) => (
                       <button
@@ -548,7 +537,6 @@ const Admin: React.FC = () => {
         </>
       )}
 
-      {/* Modal de Adicionar Quadra */}
       {isAddingCourt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -623,7 +611,6 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Edição de Quadra */}
       {editingCourt && (
         <EditCourtModal
           isOpen={!!editingCourt}

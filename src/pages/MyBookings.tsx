@@ -4,7 +4,6 @@ import { getBookings } from '../connection/apiConnection';
 import { Booking } from '../types';
 import { BookingsGridSkeleton } from '../components/BookingSkeleton';
 
-// Utility functions
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'agendado':
@@ -31,7 +30,6 @@ const formatTime = (date: string) => {
   });
 };
 
-// Internal Components
 const BookingCard: React.FC<{ booking: Booking }> = ({ booking }) => {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
@@ -109,7 +107,6 @@ const ErrorState: React.FC<{ message: string }> = ({ message }) => {
   );
 };
 
-// Main Component
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);

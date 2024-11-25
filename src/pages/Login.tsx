@@ -1,5 +1,3 @@
-// src/pages/Login.tsx
-
 import React, { useState, useContext } from 'react';
 import { Mail, Lock, CheckCircle } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
@@ -15,7 +13,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
-  const { login } = useContext(AuthContext); // Importa a função login do contexto
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,10 +25,8 @@ const Login: React.FC = () => {
 
       console.log('Login bem-sucedido:', response);
 
-      // Use a função login do contexto com o LoginResponse completo
       login(response);
 
-      // Exibir a notificação de sucesso
       toast.success('Login realizado com sucesso!', {
         position: 'top-right',
         autoClose: 3000,
@@ -42,7 +38,6 @@ const Login: React.FC = () => {
         theme: 'colored',
       });
 
-      // Redirecionar com base no papel do usuário
       if (response.user.role === 'admin') {
         navigate('/admin');
       } else {
@@ -50,7 +45,6 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       console.error('Erro ao fazer login:', err);
-      // Exibir notificação de erro
       toast.error('Email ou senha inválidos. Tente novamente.', {
         position: 'top-right',
         autoClose: 5000,
@@ -68,7 +62,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Coluna Esquerda */}
       <div className="hidden w-2/3 flex-col bg-emerald-700 text-white lg:flex">
         <div className="flex flex-grow flex-col items-center justify-center px-20 text-center">
           <img
@@ -81,7 +74,6 @@ const Login: React.FC = () => {
             O melhor aplicativo para agendamento de quadras esportivas.
           </p>
 
-          {/* Lista de benefícios */}
           <ul className="space-y-4 text-left">
             <li className="flex items-center">
               <CheckCircle className="mr-2 h-6 w-6 text-white" />
@@ -102,7 +94,6 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Coluna Direita */}
       <div className="flex w-full items-center justify-center bg-gray-100 px-6 lg:w-1/3">
         <div className="w-full max-w-md">
           <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">
@@ -111,7 +102,6 @@ const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="rounded-xl bg-white p-8 shadow-lg">
             <div className="space-y-4">
-              {/* Campo de Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Seu e-mail
@@ -130,7 +120,6 @@ const Login: React.FC = () => {
                 </div>
               </div>
 
-              {/* Campo de Senha */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Senha
@@ -177,8 +166,6 @@ const Login: React.FC = () => {
           </form>
         </div>
       </div>
-
-      {/* Modal de Registro */}
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}

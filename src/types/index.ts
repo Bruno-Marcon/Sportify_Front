@@ -2,9 +2,6 @@
 // Interfaces Gerais
 // ================================
 
-/**
- * Interface para representar uma Quadra (Court)
- */
 export interface CourtAttributes {
   name: string;
   max_players: number;
@@ -67,7 +64,6 @@ export interface BookingAttributes {
   players: Participant[];
 }
 
-// Interface para uma reserva retornada pela API
 export interface BookingData {
   id: string;
   type: string;
@@ -92,7 +88,6 @@ export interface PagedBookingsResponse {
   };
 }
 
-// Interface para a resposta da API ao criar uma reserva
 export interface CreateBookingResponse {
   data: BookingData;
 }

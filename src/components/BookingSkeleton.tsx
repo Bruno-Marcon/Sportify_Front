@@ -11,22 +11,17 @@ export const BookingSkeleton: React.FC = () => (
     foregroundColor="#e5e7eb"
     className="w-full h-full"
   >
-    {/* Header */}
     <rect x="24" y="24" rx="4" ry="4" width="200" height="24" />
     <rect x="24" y="60" rx="12" ry="12" width="100" height="24" />
     
-    {/* Action buttons */}
     <rect x="500" y="24" rx="4" ry="4" width="32" height="32" />
     <rect x="544" y="24" rx="4" ry="4" width="32" height="32" />
     
-    {/* Date and time info */}
     <rect x="24" y="120" rx="4" ry="4" width="300" height="20" />
     
-    {/* Participants and value */}
     <rect x="24" y="160" rx="4" ry="4" width="400" height="16" />
     <rect x="24" y="188" rx="4" ry="4" width="200" height="16" />
     
-    {/* Action buttons */}
     <rect x="24" y="240" rx="6" ry="6" width="260" height="40" />
     <rect x="300" y="240" rx="6" ry="6" width="120" height="40" />
   </ContentLoader>

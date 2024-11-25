@@ -1,5 +1,3 @@
-// src/context/AuthContext.tsx
-
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import { LoginResponse, User } from '../types/index';
 
@@ -27,7 +25,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Verifica se há um token no localStorage ao montar o componente
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 

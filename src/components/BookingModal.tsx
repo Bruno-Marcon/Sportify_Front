@@ -93,7 +93,6 @@ const BookingModal: React.FC<BookingModalProps> = ({
         isPublic,
       };
 
-      // Cria a reserva e obtém o link para compartilhamento
       const response: CreateBookingResponse = await createBooking(bookingData);
       const bookingId = response.data.id;
       const shareToken = response.data.attributes.share_token;
@@ -106,7 +105,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
       });
 
       if (onBookingComplete) {
-        onBookingComplete(shareLink); // Passa o link gerado para o modal pai
+        onBookingComplete(shareLink);
       }
 
       handleClose();
@@ -128,7 +127,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setSelectedTime(null);
     setIsPublic(true);
     setErrorMessage(null);
-    onClose(); // Fecha o modal corretamente
+    onClose();
   };
 
   const formattedPrice = court
@@ -137,10 +136,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
-      {/* Fundo escuro */}
       <Dialog.Overlay className="fixed inset-0 bg-black/50" />
 
-      {/* Container do modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-lg">
           <div className="flex items-center justify-between border-b pb-4">

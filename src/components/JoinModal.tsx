@@ -111,13 +111,9 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Fundo escuro */}
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-      {/* Container do modal */}
       <div className="flex min-h-screen items-center justify-center px-4 py-6">
-        {/* Painel do modal */}
         <Dialog.Panel className="mx-auto w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
-          {/* Cabeçalho do modal */}
           <div className="flex items-center justify-between border-b pb-4">
             <Dialog.Title className="text-xl font-semibold text-gray-900">
               Entrar na Reserva
@@ -130,7 +126,6 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
             </button>
           </div>
 
-          {/* Mensagem de erro */}
           {errorMessage && (
             <div className="mt-4 mb-4 rounded-md bg-red-50 p-4">
               <div className="flex">
@@ -142,7 +137,6 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
             </div>
           )}
 
-          {/* Conteúdo do modal */}
           <div className="mt-4 space-y-4">
             <div>
               <p className="text-sm text-gray-600">
@@ -161,7 +155,6 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
               </p>
             </div>
 
-            {/* Lista de jogadores confirmados */}
             <div>
               <h3 className="mb-2 text-sm font-medium text-gray-800">Jogadores Confirmados:</h3>
               {booking.participants && booking.participants.length > 0 ? (
@@ -182,7 +175,6 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
             </div>
           </div>
 
-          {/* Rodapé do modal */}
           <div className="mt-6 flex flex-col-reverse items-center justify-end gap-4 sm:flex-row">
             <button
               onClick={onClose}

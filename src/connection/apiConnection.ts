@@ -1,8 +1,4 @@
-// apiConnection.ts
 
-// ================================
-// Importações
-// ================================
 import {
   UserResponse,
   LoginResponse,
@@ -24,14 +20,13 @@ import {
 // ================================
 // Configurações Gerais
 // ================================
-const BASE_URL = "http://127.0.0.1:3000"; // Atualize com a URL do seu backend
 
-// Função utilitária para obter o token do localStorage
+const BASE_URL = "http://127.0.0.1:3000";
+
 const getToken = (): string | null => {
   return localStorage.getItem('token');
 };
 
-// Função utilitária para realizar fetch com autenticação
 const authorizedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const token = getToken();
   if (!token) {
@@ -51,15 +46,6 @@ const authorizedFetch = async (url: string, options: RequestInit = {}): Promise<
 // Endpoints de Autenticação
 // ================================
 
-/**
- * Cria um novo usuário.
- * @param name Nome do usuário
- * @param email Email do usuário
- * @param password Senha
- * @param passwordConfirmation Confirmação da senha
- * @param document Documento do usuário
- * @returns Dados do usuário criado
- */
 export const createUser = async (
   name: string,
   email: string,
@@ -102,12 +88,6 @@ export const createUser = async (
   }
 };
 
-/**
- * Realiza login do usuário.
- * @param email Email do usuário
- * @param password Senha do usuário
- * @returns Dados de autenticação e usuário
- */
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
   const endpoint = "api/v1/auth/sign_in";
   const loginData = { email, password };
@@ -138,10 +118,7 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
 // Endpoints de Usuário
 // ================================
 
-/**
- * Obtém informações do usuário autenticado.
- * @returns Informações do usuário
- */
+
 export const fetchUserInformation = async (): Promise<UserInformationResponse> => {
   const endpoint = 'api/v1/informations/me';
 
@@ -166,10 +143,6 @@ export const fetchUserInformation = async (): Promise<UserInformationResponse> =
 // Endpoints de Quadras
 // ================================
 
-/**
- * Obtém a lista de quadras disponíveis.
- * @returns Lista de quadras
- */
 export const createCourt = async (courtData: {
   name: string;
   category: string;
@@ -178,9 +151,9 @@ export const createCourt = async (courtData: {
   price: number;
   status: string;
 }): Promise<Court> => {
-  const endpoint = "api/v1/courts"; // Ajuste conforme a sua API
+  const endpoint = "api/v1/courts";
 
-  console.log('Enviando dados para a API:', courtData); // Log dos dados enviados
+  console.log('Enviando dados para a API:', courtData);
 
   try {
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
@@ -197,13 +170,12 @@ export const createCourt = async (courtData: {
     }
 
     const result = await response.json();
-    console.log('Resposta da API após criação da quadra:', result); // Log da resposta
+    console.log('Resposta da API após criação da quadra:', result);
 
-    // Processar result.data para extrair o objeto Court
     const data = result.data;
     const { attributes, id } = data;
     const newCourt: Court = {
-      id: parseInt(id, 10), // Converter id de string para number
+      id: parseInt(id, 10),
       name: attributes.name,
       category: attributes.category,
       description: attributes.description,
@@ -230,13 +202,13 @@ export const updateCourt = async (
     status: string;
   }
 ): Promise<Court> => {
-  const endpoint = `api/v1/courts/${courtId}`; // Ajuste conforme a sua API
+  const endpoint = `api/v1/courts/${courtId}`;
 
-  console.log(`Atualizando quadra com ID: ${courtId}`, courtData); // Log dos dados enviados
+  console.log(`Atualizando quadra com ID: ${courtId}`, courtData);
 
   try {
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
-      method: 'PUT', // ou 'PATCH' conforme a sua API
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -249,7 +221,7 @@ export const updateCourt = async (
     }
 
     const result = await response.json();
-    console.log('Resposta da API após atualização da quadra:', result); // Log da resposta
+    console.log('Resposta da API após atualização da quadra:', result);
 
     const data = result.data;
     const { attributes, id } = data;
@@ -284,7 +256,6 @@ export const deleteCourt = async (courtId: number): Promise<void> => {
       throw new Error(errorData.message || 'Erro ao excluir quadra.');
     }
 
-    // Supondo que a API não retorne conteúdo no DELETE
   } catch (error) {
     console.error('Erro ao excluir quadra:', error);
     throw error;
@@ -295,7 +266,7 @@ export const getCourts = async (
   page: number = 1,
   limit: number = 10
 ): Promise<PagedCourtsResponse> => {
-  const endpoint = "api/v1/courts"; // Ajuste conforme a sua API
+  const endpoint = "api/v1/courts";
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
@@ -312,11 +283,10 @@ export const getCourts = async (
 
     const result: CourtsResponse = await response.json();
 
-    // Processar result.data para extrair um array de objetos Court
     const courts: Court[] = result.data.map((courtData: CourtData) => {
       const { attributes, id } = courtData;
       return {
-        id: parseInt(id, 10), // Converter id de string para number
+        id: parseInt(id, 10),
         name: attributes.name,
         category: attributes.category,
         description: attributes.description,
@@ -340,18 +310,11 @@ export const getCourts = async (
   }
 };
 
-
-
-
 // ================================
 // Endpoints de Reservas
 // ================================
 
-/**
- * Obtém os horários disponíveis para uma quadra específica.
- * @param courtId ID da quadra
- * @returns Horários disponíveis
- */
+
 export const getAvailableTimes = async (courtId: number): Promise<AvailableTimesResponse> => {
   const endpoint = `api/v1/bookings/${courtId}/available_times`;
 
@@ -366,7 +329,6 @@ export const getAvailableTimes = async (courtId: number): Promise<AvailableTimes
 
     const result = await response.json();
 
-    // Formata os dados recebidos
     return {
       courtId: result.court_id,
       date: result.date,
@@ -380,12 +342,6 @@ export const getAvailableTimes = async (courtId: number): Promise<AvailableTimes
     throw error;
   }
 };
-
-/**
- * Cria uma nova reserva.
- * @param params Parâmetros da reserva
- * @returns Dados da reserva criada
- */
 export const createBooking = async (params: CreateBookingParams): Promise<CreateBookingResponse> => {
   const endpoint = "api/v1/bookings";
 
@@ -415,10 +371,6 @@ export const createBooking = async (params: CreateBookingParams): Promise<Create
   }
 };
 
-/**
- * Busca as reservas públicas disponíveis.
- * @returns Lista de reservas públicas
- */
 export const fetchPublicBookings = async (): Promise<PublicBookingResponse> => {
   const endpoint = `api/v1/bookings?filter[public_eq]=true`;
 
@@ -442,7 +394,7 @@ export const getBookings = async (
   page: number = 1,
   limit: number = 10
 ): Promise<PagedBookingsResponse> => {
-  const endpoint = "api/v1/bookings"; // Ajuste conforme a sua API
+  const endpoint = "api/v1/bookings";
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
@@ -459,7 +411,6 @@ export const getBookings = async (
 
     const result: BookingsResponse = await response.json();
 
-    // Processar result.data para extrair um array de objetos Booking
     const bookings: Booking[] = result.data.map((bookingData: BookingData) => {
       const { attributes, id } = bookingData;
       return {
@@ -468,7 +419,7 @@ export const getBookings = async (
         startsOn: attributes.starts_on,
         endsOn: attributes.ends_on,
         isPublic: attributes.public,
-        maxPlayers: 0, // Preencha conforme a lógica necessária
+        maxPlayers: 0,
         currentPlayers: attributes.players.length,
         participants: attributes.players,
         status: attributes.status,
@@ -491,13 +442,8 @@ export const getBookings = async (
 };
 
 
-/**
- * Exclui uma reserva existente.
- * @param bookingId ID da reserva a ser excluída
- * @returns void
- */
-export const deleteBooking = async (bookingId: number): Promise<void> => { // Mantido como number no frontend
-  const endpoint = `api/v1/bookings/${bookingId}`; // Convertendo bookingId para string na URL
+export const deleteBooking = async (bookingId: number): Promise<void> => {
+  const endpoint = `api/v1/bookings/${bookingId}`;
 
   try {
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
@@ -509,7 +455,6 @@ export const deleteBooking = async (bookingId: number): Promise<void> => { // Ma
       throw new Error(errorData.message || 'Erro ao deletar reserva.');
     }
 
-    // Se a resposta for OK, não há necessidade de retornar nada
   } catch (error) {
     console.error("Erro na função deleteBooking:", error);
     throw error;

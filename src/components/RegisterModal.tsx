@@ -92,14 +92,12 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
       console.log('Usuário criado com sucesso.');
 
-      // Exibir mensagem de sucesso com Toast
       toast.success('Conta criada com sucesso! Redirecionando...', {
         position: 'top-right',
         autoClose: 3000,
         theme: 'colored',
       });
 
-      // Limpar formulário
       setFormData({
         name: '',
         email: '',
@@ -108,13 +106,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
         document: '',
       });
 
-      // Fechar modal e redirecionar para login
       onClose();
       navigate('/login');
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
 
-      // Exibir mensagem de erro com Toast
       toast.error('Erro ao criar a conta. Por favor, tente novamente.', {
         position: 'top-right',
         autoClose: 5000,

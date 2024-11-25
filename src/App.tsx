@@ -9,7 +9,7 @@ import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
 import Admin from './components/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute'; // Importar o AdminRoute
+import AdminRoute from './components/AdminRoute'; 
 import ToastProvider from './components/ToastContainer'; 
 import { AuthProvider } from './context/AuthContext';
 
@@ -19,10 +19,8 @@ const App: React.FC = () => {
       <Router>
         <ToastProvider />
         <Routes>
-          {/* Rota de Login */}
           <Route path="/login" element={<Login />} />
 
-          {/* Rotas protegidas */}
           <Route
             path="*"
             element={
@@ -34,7 +32,6 @@ const App: React.FC = () => {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/myBookings" element={<MyBookings />} />                      
-                      {/* Rota Admin protegida */}
                       <Route
                         path="/admin"
                         element={

@@ -11,12 +11,11 @@ const HomePage: React.FC = () => {
 
   return (
     <main className="p-4 sm:p-6">
-      {/* Seção de Cabeçalho */}
       <div className="mb-6 flex flex-col items-start justify-between sm:flex-row sm:items-center">
         <h1 className="text-2xl font-bold text-gray-900">Quadras Disponíveis</h1>
         <div className="mt-4 flex gap-4 sm:mt-0">
           <button
-            onClick={() => setShareModalOpen(true)} // Abre o Modal de Compartilhamento
+            onClick={() => setShareModalOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
           >
             <Filter className="h-4 w-4" />
@@ -24,12 +23,8 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Conteúdo Principal */}
       <CourtList />
       <PublicBookings />
-
-      {/* Modais */}
       <BookingModal
         isOpen={isBookingModalOpen}
         onClose={() => setBookingModalOpen(false)}

@@ -1,5 +1,3 @@
-// src/components/EditCourtModal.tsx
-
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Court } from '../types/index';
@@ -25,21 +23,20 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Preparar os dados com os nomes corretos
     const updatedData = {
       name,
       category,
       description,
-      max_players: maxPlayers, // Ajuste para snake_case
+      max_players: maxPlayers,
       price,
       status,
     };
 
-    console.log('Dados enviados para atualização da quadra:', updatedData); // Log dos dados enviados
+    console.log('Dados enviados para atualização da quadra:', updatedData);
 
     try {
       const updatedCourt = await updateCourt(court.id, updatedData);
-      console.log('Quadra atualizada com sucesso:', updatedCourt); // Log da resposta
+      console.log('Quadra atualizada com sucesso:', updatedCourt);
       onUpdate(updatedCourt);
       toast.success('Quadra atualizada com sucesso!');
       onClose();
@@ -47,10 +44,8 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
       console.error('Erro ao atualizar quadra:', error);
 
       if (error instanceof Error) {
-        // Se for uma instância de Error, exibe a mensagem
         toast.error(`Erro ao atualizar quadra: ${error.message}`);
       } else {
-        // Caso contrário, exibe uma mensagem genérica
         toast.error('Ocorreu um erro inesperado ao atualizar a quadra.');
       }
     } finally {

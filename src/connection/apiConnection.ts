@@ -11,10 +11,14 @@ import {
   CreateBookingParams,
   PublicBookingResponse,
   UserInformationResponse,
-  CourtsResponse, 
-  CourtData, 
   CreateBookingResponse, 
   Booking,
+  PagedCourtsResponse,
+  CourtsResponse,
+  CourtData,
+  PagedBookingsResponse,
+  BookingsResponse,
+  BookingData,
 } from '../types/index';
 
 // ================================
@@ -194,7 +198,21 @@ export const createCourt = async (courtData: {
 
     const result = await response.json();
     console.log('Resposta da API após criação da quadra:', result); // Log da resposta
-    return result.data as Court; // Ajuste conforme a estrutura da resposta
+
+    // Processar result.data para extrair o objeto Court
+    const data = result.data;
+    const { attributes, id } = data;
+    const newCourt: Court = {
+      id: parseInt(id, 10), // Converter id de string para number
+      name: attributes.name,
+      category: attributes.category,
+      description: attributes.description,
+      max_players: attributes.max_players,
+      price: Number(attributes.price),
+      status: attributes.status,
+    };
+
+    return newCourt;
   } catch (error) {
     console.error("Erro na função createCourt:", error);
     throw error;
@@ -232,12 +250,26 @@ export const updateCourt = async (
 
     const result = await response.json();
     console.log('Resposta da API após atualização da quadra:', result); // Log da resposta
-    return result.data as Court; // Ajuste conforme a estrutura da resposta
+
+    const data = result.data;
+    const { attributes, id } = data;
+    const updatedCourt: Court = {
+      id: parseInt(id, 10),
+      name: attributes.name,
+      category: attributes.category,
+      description: attributes.description,
+      max_players: attributes.max_players,
+      price: Number(attributes.price),
+      status: attributes.status,
+    };
+
+    return updatedCourt;
   } catch (error) {
     console.error("Erro na função updateCourt:", error);
     throw error;
   }
 };
+
 
 export const deleteCourt = async (courtId: number): Promise<void> => {
   const endpoint = `api/v1/admin/courts/${courtId}`;
@@ -259,11 +291,18 @@ export const deleteCourt = async (courtId: number): Promise<void> => {
   }
 };
 
-export const getCourts = async (): Promise<Court[]> => {
-  const endpoint = "api/v1/courts";
+export const getCourts = async (
+  page: number = 1,
+  limit: number = 10
+): Promise<PagedCourtsResponse> => {
+  const endpoint = "api/v1/courts"; // Ajuste conforme a sua API
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
 
   try {
-    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}?${params.toString()}`, {
       method: 'GET',
     });
 
@@ -273,30 +312,35 @@ export const getCourts = async (): Promise<Court[]> => {
 
     const result: CourtsResponse = await response.json();
 
-    if (!Array.isArray(result.data)) {
-      throw new Error("Resposta inesperada: dados de quadras ausentes.");
-    }
-
-    return result.data.map((court: CourtData) => {
-      if (!court.attributes) {
-        throw new Error(`Quadra inválida: ${JSON.stringify(court)}`);
-      }
-
+    // Processar result.data para extrair um array de objetos Court
+    const courts: Court[] = result.data.map((courtData: CourtData) => {
+      const { attributes, id } = courtData;
       return {
-        id: parseInt(court.id, 10),
-        name: court.attributes.name || "Nome não especificado",
-        maxPlayers: court.attributes.max_players || 0,
-        category: court.attributes.category || "Categoria desconhecida",
-        description: court.attributes.description || "Sem descrição",
-        price: court.attributes.price || 0,
-        status: court.attributes.status || "closed",
-      } as Court;
+        id: parseInt(id, 10), // Converter id de string para number
+        name: attributes.name,
+        category: attributes.category,
+        description: attributes.description,
+        max_players: attributes.max_players,
+        price: Number(attributes.price),
+        status: attributes.status,
+      };
     });
+
+    return {
+      courts,
+      meta: {
+        currentPage: result.meta.current_page,
+        totalPages: result.meta.total_pages,
+        totalCount: result.meta.total_count,
+      },
+    };
   } catch (error) {
     console.error("Erro ao buscar quadras:", error);
     throw error;
   }
 };
+
+
 
 
 // ================================
@@ -394,39 +438,66 @@ export const fetchPublicBookings = async (): Promise<PublicBookingResponse> => {
     throw error;
   }
 };
-export const getBookings = async (): Promise<Booking[]> => {
+export const getBookings = async (
+  page: number = 1,
+  limit: number = 10
+): Promise<PagedBookingsResponse> => {
   const endpoint = "api/v1/bookings"; // Ajuste conforme a sua API
-
-  console.log('Buscando reservas na API...'); // Log de depuração
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
 
   try {
-    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}?${params.toString()}`, {
       method: 'GET',
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao buscar reservas.');
+      throw new Error(`Erro na requisição: ${response.statusText}`);
     }
 
-    const result = await response.json();
-    console.log('Reservas recebidas da API:', result); // Log da resposta
-    return result.data as Booking[]; // Ajuste conforme a estrutura da resposta
+    const result: BookingsResponse = await response.json();
+
+    // Processar result.data para extrair um array de objetos Booking
+    const bookings: Booking[] = result.data.map((bookingData: BookingData) => {
+      const { attributes, id } = bookingData;
+      return {
+        id: parseInt(id, 10),
+        courtId: parseInt(attributes.court.id, 10),
+        startsOn: attributes.starts_on,
+        endsOn: attributes.ends_on,
+        isPublic: attributes.public,
+        maxPlayers: 0, // Preencha conforme a lógica necessária
+        currentPlayers: attributes.players.length,
+        participants: attributes.players,
+        status: attributes.status,
+        totalValue: attributes.total_value,
+      };
+    });
+
+    return {
+      bookings,
+      meta: {
+        currentPage: result.meta.current_page,
+        totalPages: result.meta.total_pages,
+        totalCount: result.meta.total_count,
+      },
+    };
   } catch (error) {
-    console.error("Erro na função getBookings:", error);
+    console.error("Erro ao buscar reservas:", error);
     throw error;
   }
 };
+
 
 /**
  * Exclui uma reserva existente.
  * @param bookingId ID da reserva a ser excluída
  * @returns void
  */
-export const deleteBooking = async (bookingId: string): Promise<void> => {
-  const endpoint = `api/v1/bookings/${bookingId}`; // Ajuste conforme a sua API
-
-  console.log(`Excluindo reserva com ID: ${bookingId}`); // Log de depuração
+export const deleteBooking = async (bookingId: number): Promise<void> => { // Mantido como number no frontend
+  const endpoint = `api/v1/bookings/${bookingId}`; // Convertendo bookingId para string na URL
 
   try {
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
@@ -435,10 +506,10 @@ export const deleteBooking = async (bookingId: string): Promise<void> => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao excluir reserva.');
+      throw new Error(errorData.message || 'Erro ao deletar reserva.');
     }
 
-    console.log(`Reserva com ID: ${bookingId} excluída com sucesso.`); // Log de sucesso
+    // Se a resposta for OK, não há necessidade de retornar nada
   } catch (error) {
     console.error("Erro na função deleteBooking:", error);
     throw error;

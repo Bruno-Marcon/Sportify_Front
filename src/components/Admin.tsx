@@ -4,32 +4,55 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Plus, Calendar, Edit2, Trash2, Filter } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { getCourts, createCourt, deleteCourt, getBookings, deleteBooking } from '../connection/apiConnection'; // Importar deleteBooking
-import EditCourtModal from './EditCourtModal'; // Importar o modal de edição
-import { Court, Booking } from '../types/index'; // Importar as interfaces 'Court' e 'Booking'
+import { getCourts, createCourt, deleteCourt, getBookings, deleteBooking } from '../connection/apiConnection';
+import EditCourtModal from './EditCourtModal';
+import { Court, Booking } from '../types/index';
 
 const Admin: React.FC = () => {
-  const { user } = useContext(AuthContext); // Obter informações do usuário, incluindo role
+  const { user } = useContext(AuthContext);
   const [courts, setCourts] = useState<Court[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]); // Estado para bookings
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAddingCourt, setIsAddingCourt] = useState(false);
   const [activeTab, setActiveTab] = useState<'courts' | 'reservations'>('courts');
   const [isLoadingCourts, setIsLoadingCourts] = useState<boolean>(false);
   const [errorCourts, setErrorCourts] = useState<string | null>(null);
   const [isLoadingBookings, setIsLoadingBookings] = useState<boolean>(false);
   const [errorBookings, setErrorBookings] = useState<string | null>(null);
-  const [editingCourt, setEditingCourt] = useState<Court | null>(null); // Estado para editar quadra
+  const [editingCourt, setEditingCourt] = useState<Court | null>(null);
+
+  // Estados para paginação das Quadras
+  const [currentPageCourts, setCurrentPageCourts] = useState<number>(1);
+  const [totalPagesCourts, setTotalPagesCourts] = useState<number>(1);
+  const [totalCountCourts, setTotalCountCourts] = useState<number>(0);
+  const limitCourts = 10; // Número de itens por página
+
+  // Estados para paginação das Reservas
+  const [currentPageBookings, setCurrentPageBookings] = useState<number>(1);
+  const [totalPagesBookings, setTotalPagesBookings] = useState<number>(1);
+  const [totalCountBookings, setTotalCountBookings] = useState<number>(0);
+  const limitBookings = 10; // Número de itens por página
 
   useEffect(() => {
     const fetchCourtsData = async () => {
       setIsLoadingCourts(true);
       setErrorCourts(null);
       try {
-        const data = await getCourts();
-        setCourts(data);
-      } catch (error: any) {
+        const courtsData = await getCourts(currentPageCourts, limitCourts);
+        console.log('Quadras recebidas:', courtsData); // Log das quadras recebidas
+        if ('courts' in courtsData && Array.isArray(courtsData.courts)) {
+          setCourts(courtsData.courts);
+          setTotalPagesCourts(courtsData.meta.totalPages);
+          setTotalCountCourts(courtsData.meta.totalCount);
+        } else {
+          throw new Error('Estrutura de dados inesperada para quadras.');
+        }
+      } catch (error: unknown) {
         console.error('Erro ao buscar quadras:', error);
-        setErrorCourts('Erro ao carregar quadras. Tente novamente mais tarde.');
+        if (error instanceof Error) {
+          setErrorCourts('Erro ao carregar quadras. ' + error.message);
+        } else {
+          setErrorCourts('Erro ao carregar quadras. Tente novamente mais tarde.');
+        }
       } finally {
         setIsLoadingCourts(false);
       }
@@ -39,11 +62,22 @@ const Admin: React.FC = () => {
       setIsLoadingBookings(true);
       setErrorBookings(null);
       try {
-        const data = await getBookings();
-        setBookings(data);
-      } catch (error: any) {
+        const bookingsData = await getBookings(currentPageBookings, limitBookings);
+        console.log('Dados das reservas recebidos:', bookingsData); // Log para depuração
+        if ('bookings' in bookingsData && Array.isArray(bookingsData.bookings)) {
+          setBookings(bookingsData.bookings);
+          setTotalPagesBookings(bookingsData.meta.totalPages);
+          setTotalCountBookings(bookingsData.meta.totalCount);
+        } else {
+          throw new Error('Estrutura de dados inesperada para reservas.');
+        }
+      } catch (error: unknown) {
         console.error('Erro ao buscar reservas:', error);
-        setErrorBookings('Erro ao carregar reservas. Tente novamente mais tarde.');
+        if (error instanceof Error) {
+          setErrorBookings('Erro ao carregar reservas. ' + error.message);
+        } else {
+          setErrorBookings('Erro ao carregar reservas. Tente novamente mais tarde.');
+        }
       } finally {
         setIsLoadingBookings(false);
       }
@@ -51,7 +85,59 @@ const Admin: React.FC = () => {
 
     fetchCourtsData();
     fetchBookingsData();
-  }, []);
+  }, [currentPageCourts, currentPageBookings]);
+
+  // Funções de Paginação para Quadras
+  const handlePreviousPageCourts = () => {
+    setCurrentPageCourts((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPageCourts = () => {
+    setCurrentPageCourts((prev) => Math.min(prev + 1, totalPagesCourts));
+  };
+
+  const handlePageSelectCourts = (page: number) => {
+    setCurrentPageCourts(page);
+  };
+
+  const getPageNumbersCourts = () => {
+    const maxPageButtons = 5;
+    let startPage = Math.max(currentPageCourts - Math.floor(maxPageButtons / 2), 1);
+    let endPage = startPage + maxPageButtons - 1;
+
+    if (endPage > totalPagesCourts) {
+      endPage = totalPagesCourts;
+      startPage = Math.max(endPage - maxPageButtons + 1, 1);
+    }
+
+    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+  };
+
+  // Funções de Paginação para Reservas
+  const handlePreviousPageBookings = () => {
+    setCurrentPageBookings((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPageBookings = () => {
+    setCurrentPageBookings((prev) => Math.min(prev + 1, totalPagesBookings));
+  };
+
+  const handlePageSelectBookings = (page: number) => {
+    setCurrentPageBookings(page);
+  };
+
+  const getPageNumbersBookings = () => {
+    const maxPageButtons = 5;
+    let startPage = Math.max(currentPageBookings - Math.floor(maxPageButtons / 2), 1);
+    let endPage = startPage + maxPageButtons - 1;
+
+    if (endPage > totalPagesBookings) {
+      endPage = totalPagesBookings;
+      startPage = Math.max(endPage - maxPageButtons + 1, 1);
+    }
+
+    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+  };
 
   // Função para adicionar uma nova quadra via API
   const handleAddCourt = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -84,25 +170,23 @@ const Admin: React.FC = () => {
     try {
       const newCourt = await createCourt(courtData);
       console.log('Quadra criada com sucesso:', newCourt); // Log da resposta bem-sucedida
-      setCourts((prevCourts) => [...prevCourts, newCourt]);
+      // Se estiver na última página e houver espaço, adicionar, caso contrário, recarregar a página
+      if (courts.length < limitCourts) {
+        setCourts((prevCourts) => [...prevCourts, newCourt]);
+      } else {
+        setCurrentPageCourts(totalPagesCourts + 1); // Vai para a nova página onde a quadra foi adicionada
+      }
+      setTotalCountCourts((prevCount) => prevCount + 1);
       setIsAddingCourt(false);
       toast.success('Quadra adicionada com sucesso!');
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao adicionar quadra:', error);
 
-      // Verificar se a resposta do erro contém detalhes
-      if (error.response) {
-        try {
-          const errorData = await error.response.json();
-          console.error('Detalhes do erro da API:', errorData);
-          toast.error(`Erro ao adicionar quadra: ${errorData.message || 'Bad Request'}`);
-        } catch (parseError) {
-          console.error('Erro ao analisar a resposta de erro:', parseError);
-          toast.error(`Erro ao adicionar quadra: ${error.message}`);
-        }
-      } else {
+      if (error instanceof Error) {
         toast.error(`Erro ao adicionar quadra: ${error.message}`);
+      } else {
+        toast.error('Ocorreu um erro inesperado ao adicionar a quadra.');
       }
     }
   };
@@ -125,32 +209,44 @@ const Admin: React.FC = () => {
   };
 
   // Função para excluir uma quadra via API
-  const handleDeleteCourt = async (courtId: number) => {
+  const handleDeleteCourt = async (courtId: number) => { // Alterado para number
     if (window.confirm('Tem certeza que deseja excluir esta quadra?')) {
       try {
         await deleteCourt(courtId);
         setCourts((prevCourts) => prevCourts.filter((court) => court.id !== courtId));
+        setTotalCountCourts((prevCount) => prevCount - 1);
         toast.success('Quadra excluída com sucesso!');
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao excluir quadra:', error);
-        toast.error(`Erro ao excluir quadra: ${error.message}`);
+        if (error instanceof Error) {
+          toast.error(`Erro ao excluir quadra: ${error.message}`);
+        } else {
+          toast.error('Ocorreu um erro inesperado ao excluir a quadra.');
+        }
       }
     }
   };
 
   // Função para excluir uma reserva via API
-  const handleDeleteBooking = async (bookingId: string) => {
+  const handleDeleteBooking = async (bookingId: number) => { // Alterado para number
     if (window.confirm('Tem certeza que deseja excluir esta reserva?')) {
       try {
         await deleteBooking(bookingId);
         setBookings((prevBookings) => prevBookings.filter((booking) => booking.id !== bookingId));
+        setTotalCountBookings((prevCount) => prevCount - 1);
         toast.success('Reserva excluída com sucesso!');
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao excluir reserva:', error);
-        toast.error(`Erro ao excluir reserva: ${error.message}`);
+        if (error instanceof Error) {
+          toast.error(`Erro ao excluir reserva: ${error.message}`);
+        } else {
+          toast.error('Ocorreu um erro inesperado ao excluir a reserva.');
+        }
       }
     }
   };
+
+  console.log('Quadras no estado:', courts); // Log para verificar o estado das quadras
 
   return (
     <div className="p-6">
@@ -212,44 +308,98 @@ const Admin: React.FC = () => {
           ) : courts.length === 0 ? (
             <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courts.map((court) => (
-                <div
-                  key={court.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">{court.name}</h3>
-                      <span className="inline-block px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 mt-2">
-                        {court.category}
-                      </span>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {courts.map((court) => (
+                  <div
+                    key={court.id}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">{court.name}</h3>
+                        <span className="inline-block px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 mt-2">
+                          {court.category}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          onClick={() => openEditModal(court)}
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          onClick={() => handleDeleteCourt(court.id)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                        onClick={() => openEditModal(court)}
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        onClick={() => handleDeleteCourt(court.id)}
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                    <div className="space-y-2 text-gray-600">
+                      <p>Máximo {court.max_players} jogadores</p>
+                      <p>Status: {court.status === 'open' ? 'Disponível' : 'Fechada'}</p>
+                      <p className="text-xl font-semibold text-green-600">
+                        R$ {court.price?.toFixed(2) || '0.00'}
+                      </p>
                     </div>
                   </div>
-                  <div className="space-y-2 text-gray-600">
-                    <p>Máximo {court.max_Players} jogadores</p>
-                    <p>Status: {court.status === 'open' ? 'Disponível' : 'Fechada'}</p>
-                    <p className="text-xl font-semibold text-green-600">
-                      R$ {court.price.toFixed(2)}
-                    </p>
+                ))}
+              </div>
+
+              {/* Controles de Paginação para Quadras */}
+              <div className="mt-8 flex flex-col items-center space-y-4">
+                {/* Informações de Paginação */}
+                <p className="text-sm text-gray-600">
+                  Mostrando {courts.length} de {totalCountCourts} quadras
+                </p>
+
+                {/* Botões de Navegação */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handlePreviousPageCourts}
+                    disabled={currentPageCourts === 1}
+                    className={`px-4 py-2 rounded ${
+                      currentPageCourts === 1
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    Anterior
+                  </button>
+
+                  {/* Exibir números das páginas */}
+                  <div className="flex space-x-2">
+                    {getPageNumbersCourts().map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageSelectCourts(page)}
+                        className={`px-3 py-1 rounded ${
+                          page === currentPageCourts
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
                   </div>
+
+                  <button
+                    onClick={handleNextPageCourts}
+                    disabled={currentPageCourts === totalPagesCourts}
+                    className={`px-4 py-2 rounded ${
+                      currentPageCourts === totalPagesCourts
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    Próximo
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            </>
           )}
         </>
       )}
@@ -278,68 +428,122 @@ const Admin: React.FC = () => {
           ) : bookings.length === 0 ? (
             <p className="text-center text-gray-700">Nenhuma reserva disponível no momento.</p>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quadra
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Início
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Fim
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Participantes
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {bookings.map((booking) => (
-                      <tr key={booking.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {courts.find((c) => c.id === booking.courtId)?.name || 'Quadra Desconhecida'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(booking.startsOn).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(booking.endsOn).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {booking.participants.map((p) => p.name).join(', ')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {booking.status || 'Pendente'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex gap-2">
-                            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                              <Calendar size={18} />
-                            </button>
-                            <button
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                              onClick={() => handleDeleteBooking(booking.id)}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
+            <>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quadra
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Início
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fim
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Participantes
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ações
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {bookings.map((booking) => (
+                        <tr key={booking.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {courts.find((c) => c.id === booking.courtId)?.name || 'Quadra Desconhecida'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {new Date(booking.startsOn).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {new Date(booking.endsOn).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {booking.participants.map((p) => p.name).join(', ')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {booking.status || 'Pendente'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex gap-2">
+                              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                                <Calendar size={18} />
+                              </button>
+                              <button
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                onClick={() => handleDeleteBooking(booking.id)}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+
+              {/* Controles de Paginação para Reservas */}
+              <div className="mt-8 flex flex-col items-center space-y-4">
+                {/* Informações de Paginação */}
+                <p className="text-sm text-gray-600">
+                  Mostrando {bookings.length} de {totalCountBookings} reservas
+                </p>
+
+                {/* Botões de Navegação */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handlePreviousPageBookings}
+                    disabled={currentPageBookings === 1}
+                    className={`px-4 py-2 rounded ${
+                      currentPageBookings === 1
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Anterior
+                  </button>
+
+                  {/* Exibir números das páginas */}
+                  <div className="flex space-x-2">
+                    {getPageNumbersBookings().map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageSelectBookings(page)}
+                        className={`px-3 py-1 rounded ${
+                          page === currentPageBookings
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleNextPageBookings}
+                    disabled={currentPageBookings === totalPagesBookings}
+                    className={`px-4 py-2 rounded ${
+                      currentPageBookings === totalPagesBookings
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Próximo
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}

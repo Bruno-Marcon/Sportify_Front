@@ -14,13 +14,21 @@ const CourtList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const limit = 10; // Número de itens por página
+
   useEffect(() => {
     const fetchCourts = async () => {
       setIsLoading(true);
       setErrorMessage(null);
       try {
-        const data = await getCourts();
-        setCourts(data);
+        const data = await getCourts(currentPage, limit);
+        setCourts(data.courts);
+        setTotalPages(data.meta.totalPages);
+        setTotalCount(data.meta.totalCount);
       } catch (error) {
         console.error('Erro ao carregar quadras:', error);
         setErrorMessage('Erro ao carregar quadras. Tente novamente mais tarde.');
@@ -30,11 +38,37 @@ const CourtList: React.FC = () => {
     };
 
     fetchCourts();
-  }, []);
+  }, [currentPage]);
 
   const handleBookingComplete = (bookingLink: string) => {
     setShareModalLink(bookingLink);
     setIsModalOpen(false);
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePageSelect = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Opcional: Limitar o número de botões de página exibidos
+  const getPageNumbers = () => {
+    const maxPageButtons = 5;
+    let startPage = Math.max(currentPage - Math.floor(maxPageButtons / 2), 1);
+    let endPage = startPage + maxPageButtons - 1;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(endPage - maxPageButtons + 1, 1);
+    }
+
+    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
   };
 
   return (
@@ -46,47 +80,101 @@ const CourtList: React.FC = () => {
       ) : courts.length === 0 ? (
         <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courts.map((court) => (
-            <div
-              key={court.id}
-              className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
-            >
-              <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-800">{court.name}</h3>
-                  <div className="ml-2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
-                    {court.category}
+        <>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {courts.map((court) => (
+              <div
+                key={court.id}
+                className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
+              >
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-gray-800">{court.name}</h3>
+                    <div className="ml-2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
+                      {court.category}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-3">{court.description}</p>
+                  <div className="mt-4 flex items-center text-gray-600">
+                    <span className="ml-2 text-sm">Máximo {court.max_players} jogadores</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-sm text-gray-800">
+                      <strong>Status:</strong> {court.status === 'open' ? 'Disponível' : 'Fechada'}
+                    </p>
+                    <p className="text-lg font-semibold text-emerald-600">
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(court.price)}
+                    </p>
                   </div>
                 </div>
-                <p className="mt-2 text-sm text-gray-600 line-clamp-3">{court.description}</p>
-                <div className="mt-4 flex items-center text-gray-600">
-                  <span className="ml-2 text-sm">Máximo {court.maxPlayers} jogadores</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-sm text-gray-800">
-                    <strong>Status:</strong> {court.status === 'open' ? 'Disponível' : 'Fechada'}
-                  </p>
-                  <p className="text-lg font-semibold text-emerald-600">
-                    {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    }).format(court.price)}
-                  </p>
-                </div>
+                <button
+                  onClick={() => {
+                    setSelectedCourt(court);
+                    setIsModalOpen(true);
+                  }}
+                  className="mt-auto w-full rounded-none rounded-b-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                >
+                  Reservar
+                </button>
               </div>
+            ))}
+          </div>
+
+          {/* Controles de Paginação */}
+          <div className="mt-8 flex flex-col items-center space-y-4">
+            {/* Informações de Paginação */}
+            <p className="text-sm text-gray-600">
+              Mostrando {courts.length} de {totalCount} quadras
+            </p>
+
+            {/* Botões de Navegação */}
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => {
-                  setSelectedCourt(court);
-                  setIsModalOpen(true);
-                }}
-                className="mt-auto w-full rounded-none rounded-b-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded ${
+                  currentPage === 1
+                    ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
               >
-                Reservar
+                Anterior
+              </button>
+
+              {/* Exibir números das páginas */}
+              <div className="flex space-x-2">
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageSelect(page)}
+                    className={`px-3 py-1 rounded ${
+                      page === currentPage
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded ${
+                  currentPage === totalPages
+                    ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+              >
+                Próximo
               </button>
             </div>
-          ))}
-        </div>
+          </div>
+        </>
       )}
 
       {/* Modal de Reserva */}

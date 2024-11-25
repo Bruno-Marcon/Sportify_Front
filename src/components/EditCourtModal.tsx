@@ -16,9 +16,9 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
   const [name, setName] = useState(court.name);
   const [category, setCategory] = useState(court.category);
   const [description, setDescription] = useState(court.description);
-  const [maxPlayers, setMaxPlayers] = useState(court.max_Players); // Ajuste para max_players
+  const [maxPlayers, setMaxPlayers] = useState(court.max_players);
   const [price, setPrice] = useState(court.price);
-  const [status, setStatus] = useState<'open' | 'closed'>(court.status);
+  const [status, setStatus] = useState<string>(court.status);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,21 +43,15 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
       onUpdate(updatedCourt);
       toast.success('Quadra atualizada com sucesso!');
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar quadra:', error);
 
-      // Verificar se a resposta do erro contém detalhes
-      if (error.response) {
-        try {
-          const errorData = await error.response.json();
-          console.error('Detalhes do erro da API:', errorData);
-          toast.error(`Erro ao atualizar quadra: ${errorData.message || 'Bad Request'}`);
-        } catch (parseError) {
-          console.error('Erro ao analisar a resposta de erro:', parseError);
-          toast.error(`Erro ao atualizar quadra: ${error.message}`);
-        }
-      } else {
+      if (error instanceof Error) {
+        // Se for uma instância de Error, exibe a mensagem
         toast.error(`Erro ao atualizar quadra: ${error.message}`);
+      } else {
+        // Caso contrário, exibe uma mensagem genérica
+        toast.error('Ocorreu um erro inesperado ao atualizar a quadra.');
       }
     } finally {
       setIsSubmitting(false);
@@ -133,7 +127,7 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
             <label className="block text-sm font-medium text-gray-700">Status</label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as 'open' | 'closed')}
+              onChange={(e) => setStatus(e.target.value)}
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
             >

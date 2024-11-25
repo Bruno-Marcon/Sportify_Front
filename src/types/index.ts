@@ -5,22 +5,13 @@
 /**
  * Interface para representar uma Quadra (Court)
  */
-export interface Court {
-  id: number;
-  name: string;
-  max_Players: number; // Padronizado para 'maxPlayers'
-  category: string; // Padronizado para 'category' (equivalente a 'type')
-  description: string;
-  price: number;
-  status: 'open' | 'closed'; // Utilizando enum para melhor controle
-}
 export interface CourtAttributes {
   name: string;
-  max_players: number; // Assumindo que o backend retorna 'max_players'
+  max_players: number;
   category: string;
   description: string;
   price: number;
-  status: 'open' | 'closed';
+  status: string;
 }
 export interface CourtData {
   id: string;
@@ -29,24 +20,33 @@ export interface CourtData {
 }
 export interface CourtsResponse {
   data: CourtData[];
+  meta: {
+    current_page: number;
+    total_pages: number;
+    total_count: number;
+  };
+}
+export interface PagedCourtsResponse {
+  courts: Court[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+  };
+}
+export interface Court {
+  id: number;
+  name: string;
+  max_players: number;
+  category: string;
+  description: string;
+  price: number;
+  status: string;
 }
 
 /**
  * Interface para representar uma Reserva (Booking)
  */
-export interface Booking {
-  id: string;
-  courtId: number;
-  startsOn: string;
-  endsOn: string;
-  isPublic: boolean;
-  max_Players: number;
-  currentPlayers: number;
-  participants: Participant[];
-  status?: string;
-  totalValue?: number;
-}
-
 export interface BookingAttributes {
   starts_on: string;
   ends_on: string;
@@ -59,7 +59,7 @@ export interface BookingAttributes {
     email: string;
   };
   court: {
-    id: number;
+    id: string;
     name: string;
     category: string;
     price: number;
@@ -74,9 +74,39 @@ export interface BookingData {
   attributes: BookingAttributes;
 }
 
+export interface BookingsResponse {
+  data: BookingData[];
+  meta: {
+    current_page: number;
+    total_pages: number;
+    total_count: number;
+  };
+}
+
+export interface PagedBookingsResponse {
+  bookings: Booking[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+  };
+}
+
 // Interface para a resposta da API ao criar uma reserva
 export interface CreateBookingResponse {
   data: BookingData;
+}
+export interface Booking {
+  id: number;
+  courtId: number;
+  startsOn: string;
+  endsOn: string;
+  isPublic: boolean;
+  maxPlayers: number;
+  currentPlayers: number;
+  participants: Participant[];
+  status?: string;
+  totalValue?: number;
 }
 
 /**
@@ -88,6 +118,7 @@ export interface Participant {
   cpf?: string;
   isAuthenticated: boolean;
 }
+
 
 // ================================
 // Interfaces para Respostas da API

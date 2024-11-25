@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { Copy, Check, X } from 'lucide-react';
+import { Copy, Check, X, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   bookingLink: string;
+  location: string;
+  date: string; // Representa a data do evento (e.g., "2024-11-25")
+  time: string; // Representa a hora do evento (e.g., "14:00")
+  service: string;
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink }) => {
+const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink, location, date, time}) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -32,6 +36,17 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink })
     }
   };
 
+  const whatsappMessage = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+    `🎉 *Convite Especial para Você!*\n\n` +
+    `Olá, gostaríamos de convidá-lo para praticar um esporte! Veja os detalhes do evento abaixo:\n\n` +
+    `🏢 *Local*: ${location}\n` +
+    `📆 *Data*: ${date}\n` +
+    `⏰ *Hora*: ${time}\n\n` +
+    `🔗 Para confirmar sua presença ou obter mais informações, clique no link abaixo:\n${bookingLink}\n\n` +
+    `✨ Lembre de confirmar antes que as vagas acabem!\n` +
+    `💼 Com carinho da equipe Sportify, sua parceira de confiança em esportes!`
+  )}`;
+  
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       {/* Fundo escuro */}
@@ -79,6 +94,17 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink })
                   </>
                 )}
               </button>
+            </div>
+            <div className="mt-4">
+              <a
+                href={whatsappMessage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors"
+              >
+                <Send className="h-4 w-4" />
+                Enviar pelo WhatsApp
+              </a>
             </div>
           </div>
 

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, CheckCircle } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../connection/apiConnection';
+import { toast } from 'react-toastify';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
@@ -16,7 +16,6 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
@@ -26,10 +25,32 @@ const Login: React.FC = () => {
 
       localStorage.setItem('token', response.token);
 
+      // Exibir a notificação de sucesso
+      toast.success('Login realizado com sucesso!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'colored',
+      });
+
       navigate('/');
     } catch (err) {
       console.error('Erro ao fazer login:', err);
-      setError('Email ou senha inválidos. Tente novamente.');
+      // Exibir notificação de erro
+      toast.error('Email ou senha inválidos. Tente novamente.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'colored',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +62,7 @@ const Login: React.FC = () => {
       <div className="hidden w-2/3 flex-col bg-emerald-700 text-white lg:flex">
         <div className="flex flex-grow flex-col items-center justify-center px-20 text-center">
           <img
-            src="src\public\image\logo.png"
+            src="src/public/image/logo.png"
             alt="Logo Sportify"
             className="mb-8 w-48 h-auto"
           />
@@ -79,13 +100,6 @@ const Login: React.FC = () => {
           </h1>
 
           <form onSubmit={handleSubmit} className="rounded-xl bg-white p-8 shadow-lg">
-            {error && (
-              <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                <AlertCircle className="h-5 w-5" />
-                {error}
-              </div>
-            )}
-
             <div className="space-y-4">
               {/* Campo de Email */}
               <div>

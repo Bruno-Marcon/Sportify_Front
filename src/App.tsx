@@ -1,3 +1,5 @@
+// App.tsx
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
@@ -6,7 +8,8 @@ import HomePage from './pages/HomePage';
 import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
 import UserProfile from './pages/UserProfile';
-import ProtectedRoute from './components/ProtectedRoute'; // Importa o componente de rota protegida
+import ProtectedRoute from './components/ProtectedRoute';
+import ToastProvider from './components/ToastContainer'; // Importa o ToastProvider
 
 const App: React.FC = () => {
   // Verifica se o token está presente no localStorage
@@ -14,6 +17,8 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      {/* Inclua o ToastProvider aqui */}
+      <ToastProvider />
       <Routes>
         {/* Rota de Login */}
         <Route path="/login" element={<Login />} />

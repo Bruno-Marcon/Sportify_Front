@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { NavLink} from 'react-router-dom';
-import { Home, Calendar, User, Award,Menu } from 'lucide-react';
+// src/components/Sidebar.tsx
+
+import React, { useState, useContext } from 'react';
+import { NavLink } from 'react-router-dom';
+import { Home, Calendar, Menu, Shield } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext'; // Importe o AuthContext
 
 interface NavItem {
   icon: React.FC<{ className?: string }>;
@@ -9,22 +12,29 @@ interface NavItem {
 }
 
 const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false); // Estado para o menu móvel
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { user } = useContext(AuthContext); // Acesse o usuário do contexto
+
+  // Verifique se o usuário é admin
+  const isAdmin = user?.role === 'admin';
 
   const navItems: NavItem[] = [
     { icon: Home, label: 'Tela inicial', path: '/' },
     { icon: Calendar, label: 'Minhas reservas', path: '/myBookings' },
-    { icon: User, label: 'Perfil', path: '/profile' },
-    { icon: Award, label: 'Ranking', path: '/leaderboard' },
+    // A opção Admin será adicionada condicionalmente
   ];
 
- 
+  // Adicione a opção Admin se o usuário for admin
+  if (isAdmin) {
+    navItems.push({ icon: Shield, label: 'Admin', path: '/admin' });
+  }
 
   return (
     <>
       {/* Cabeçalho móvel */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-gray-900 px-4 py-3 sm:hidden">
-        <img src="src\public\image\logo.png" alt="Logo Sportify" className="h-8 w-auto" />
+        <img src="src/public/image/logo.png" alt="Logo Sportify" className="h-8 w-auto" />
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="text-gray-300 hover:text-emerald-500 focus:outline-none"
@@ -43,7 +53,7 @@ const Sidebar: React.FC = () => {
           {/* Logo e Título */}
           <div>
             <div className="flex items-center gap-3 border-b border-gray-800 p-10">
-              <img src="src\public\image\logo.png" alt="Logo Sportify" className="h-20 w-auto" />
+              <img src="src/public/image/logo.png" alt="Logo Sportify" className="h-20 w-auto" />
             </div>
 
             {/* Navegação */}
@@ -59,7 +69,7 @@ const Sidebar: React.FC = () => {
                         : 'text-gray-300 hover:bg-gray-800 hover:text-emerald-500'
                     }`
                   }
-                  onClick={() => setIsOpen(false)} // Fecha o menu ao clicar em um item
+                  onClick={() => setIsOpen(false)}
                 >
                   <Icon className="h-5 w-5 text-emerald-500" />
                   {label}

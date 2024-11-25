@@ -8,30 +8,25 @@
 export interface Court {
   id: number;
   name: string;
-  max_Players: number;
-  category: string;
+  max_Players: number; // Padronizado para 'maxPlayers'
+  category: string; // Padronizado para 'category' (equivalente a 'type')
   description: string;
-  price: number; // Assumindo que usamos este nome consistentemente
-  status: string;
+  price: number;
+  status: 'open' | 'closed'; // Utilizando enum para melhor controle
 }
-
 export interface CourtAttributes {
   name: string;
-  max_players: number;
+  max_players: number; // Assumindo que o backend retorna 'max_players'
   category: string;
   description: string;
   price: number;
-  status: string;
+  status: 'open' | 'closed';
 }
-
-// Interface para uma quadra retornada pela API
 export interface CourtData {
   id: string;
   type: string;
   attributes: CourtAttributes;
 }
-
-// Interface para a resposta da API ao buscar quadras
 export interface CourtsResponse {
   data: CourtData[];
 }
@@ -45,7 +40,7 @@ export interface Booking {
   startsOn: string;
   endsOn: string;
   isPublic: boolean;
-  maxPlayers: number;
+  max_Players: number;
   currentPlayers: number;
   participants: Participant[];
   status?: string;
@@ -88,7 +83,7 @@ export interface CreateBookingResponse {
  * Interface para representar um Participante (Participant)
  */
 export interface Participant {
-  id: string;
+  id: number;
   name: string;
   cpf?: string;
   isAuthenticated: boolean;
@@ -108,7 +103,17 @@ export interface UserResponse {
     email: string;
     name: string;
     document: string;
+    role: 'admin' | 'user'; 
   };
+}
+export interface User {
+  id: number;
+  email: string;
+  document: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  role: 'admin' | 'user';
 }
 
 /**
@@ -121,6 +126,7 @@ export interface LoginResponse {
     email: string;
     created_at: string;
     updated_at: string;
+    role: 'admin' | 'user'; 
   };
 }
 

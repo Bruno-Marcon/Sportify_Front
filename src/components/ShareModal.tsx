@@ -1,47 +1,51 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Copy, Check, X } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
-  bookingLink?: string;
+  bookingLink: string;
 }
 
 const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink }) => {
   const [copied, setCopied] = useState(false);
-  const location = useLocation();
-
-  const currentBookingLink =
-    bookingLink || `${window.location.origin}${location.pathname}`;
 
   const handleCopy = async () => {
-    if (currentBookingLink) {
-      await navigator.clipboard.writeText(currentBookingLink);
+    try {
+      await navigator.clipboard.writeText(bookingLink);
       setCopied(true);
+      toast.success('Link copiado com sucesso!', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
       setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+      toast.error('Erro ao copiar link. Tente novamente.', {
+        position: 'top-right',
+        autoClose: 5000,
+        theme: 'colored',
+      });
     }
   };
 
-  const handleClose = () => {
-    setCopied(false);
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      {/* Fundo escuro */}
+      <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+
+      {/* Container do modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg transition-all sm:p-8">
+        <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b pb-4">
-            <Dialog.Title className="text-xl font-semibold text-gray-900">
-              Compartilhar Agendamento
-            </Dialog.Title>
+            <Dialog.Title className="text-xl font-semibold">Compartilhar Agendamento</Dialog.Title>
             <button
-              onClick={handleClose}
-              className="rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              onClick={onClose}
+              className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <X className="h-5 w-5" />
             </button>
@@ -56,7 +60,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink })
               <input
                 type="text"
                 readOnly
-                value={currentBookingLink}
+                value={bookingLink}
                 className="flex-1 bg-transparent text-sm text-gray-700 focus:outline-none"
               />
               <button
@@ -81,7 +85,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink })
           {/* Footer */}
           <div className="mt-6 flex justify-end">
             <button
-              onClick={handleClose}
+              onClick={onClose}
               className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
             >
               Fechar

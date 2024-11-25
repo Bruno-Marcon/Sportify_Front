@@ -1,11 +1,12 @@
-import React, { useState,useContext } from 'react';
+// src/pages/Login.tsx
+
+import React, { useState, useContext } from 'react';
 import { Mail, Lock, CheckCircle } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../connection/apiConnection';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../context/AuthContext';
-
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -26,8 +27,8 @@ const Login: React.FC = () => {
 
       console.log('Login bem-sucedido:', response);
 
-      // Use a função login do contexto
-      login(response.token);
+      // Use a função login do contexto com o LoginResponse completo
+      login(response);
 
       // Exibir a notificação de sucesso
       toast.success('Login realizado com sucesso!', {
@@ -41,7 +42,12 @@ const Login: React.FC = () => {
         theme: 'colored',
       });
 
-      navigate('/');
+      // Redirecionar com base no papel do usuário
+      if (response.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       console.error('Erro ao fazer login:', err);
       // Exibir notificação de erro

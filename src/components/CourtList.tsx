@@ -1,42 +1,29 @@
+// src/components/CourtList.tsx
+
 import React, { useState, useEffect } from 'react';
-import { Users } from 'lucide-react';
 import { getCourts } from '../connection/apiConnection';
 import BookingModal from './BookingModal';
-
-interface Court {
-  id: string;
-  name: string;
-  max_Players: number;
-  category: string;
-  description: string;
-  price: number;
-  status: string;
-}
+import ShareModal from './ShareModal';
+import { Court } from '../types/index';
 
 const CourtList: React.FC = () => {
   const [courts, setCourts] = useState<Court[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shareModalLink, setShareModalLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourts = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
       try {
         const data = await getCourts();
-
-        const formattedCourts = data.map((court) => ({
-          id: court.id,
-          name: court.name || 'Quadra sem nome',
-          max_Players: court.max_Players || 0,
-          category: court.category || 'Categoria desconhecida',
-          description: court.description || 'Sem descrição',
-          price: court.price || 0,
-          status: court.status || 'Indisponível',
-        }));
-
-        setCourts(formattedCourts);
+        setCourts(data);
       } catch (error) {
         console.error('Erro ao carregar quadras:', error);
+        setErrorMessage('Erro ao carregar quadras. Tente novamente mais tarde.');
       } finally {
         setIsLoading(false);
       }
@@ -45,15 +32,17 @@ const CourtList: React.FC = () => {
     fetchCourts();
   }, []);
 
-  const handleCourtClick = (court: Court) => {
-    setSelectedCourt(court);
-    setIsModalOpen(true);
+  const handleBookingComplete = (bookingLink: string) => {
+    setShareModalLink(bookingLink);
+    setIsModalOpen(false);
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       {isLoading ? (
         <p className="text-center text-gray-700">Carregando quadras...</p>
+      ) : errorMessage ? (
+        <p className="text-center text-red-500">{errorMessage}</p>
       ) : courts.length === 0 ? (
         <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
       ) : (
@@ -72,23 +61,25 @@ const CourtList: React.FC = () => {
                 </div>
                 <p className="mt-2 text-sm text-gray-600 line-clamp-3">{court.description}</p>
                 <div className="mt-4 flex items-center text-gray-600">
-                  <Users className="h-5 w-5" />
-                  <span className="ml-2 text-sm">Máximo {court.max_Players} jogadores</span>
+                  <span className="ml-2 text-sm">Máximo {court.maxPlayers} jogadores</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm text-gray-800">
-                    <strong>Status:</strong> {court.status}
+                    <strong>Status:</strong> {court.status === 'open' ? 'Disponível' : 'Fechada'}
                   </p>
                   <p className="text-lg font-semibold text-emerald-600">
                     {new Intl.NumberFormat('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
-                    }).format(court.price / 100)}
+                    }).format(court.price)}
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => handleCourtClick(court)}
+                onClick={() => {
+                  setSelectedCourt(court);
+                  setIsModalOpen(true);
+                }}
                 className="mt-auto w-full rounded-none rounded-b-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
               >
                 Reservar
@@ -104,6 +95,16 @@ const CourtList: React.FC = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           court={selectedCourt}
+          onBookingComplete={handleBookingComplete}
+        />
+      )}
+
+      {/* Modal de Compartilhamento */}
+      {shareModalLink && (
+        <ShareModal
+          isOpen={!!shareModalLink}
+          onClose={() => setShareModalLink(null)}
+          bookingLink={shareModalLink}
         />
       )}
     </div>

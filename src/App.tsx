@@ -1,4 +1,4 @@
-// App.tsx
+// src/App.tsx
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -7,11 +7,11 @@ import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
-import UserProfile from './pages/UserProfile';
+import Admin from './components/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
-import ToastProvider from './components/ToastContainer'; // Importa o ToastProvider
+import AdminRoute from './components/AdminRoute'; // Importar o AdminRoute
+import ToastProvider from './components/ToastContainer'; 
 import { AuthProvider } from './context/AuthContext';
-
 
 const App: React.FC = () => {
   return (
@@ -33,8 +33,17 @@ const App: React.FC = () => {
                     <Header />
                     <Routes>
                       <Route path="/" element={<HomePage />} />
-                      <Route path="/myBookings" element={<MyBookings />} />
-                      <Route path="/profile" element={<UserProfile />} />
+                      <Route path="/myBookings" element={<MyBookings />} />                      
+                      {/* Rota Admin protegida */}
+                      <Route
+                        path="/admin"
+                        element={
+                          <AdminRoute>
+                            <Admin />
+                          </AdminRoute>
+                        }
+                      />
+                      
                     </Routes>
                   </div>
                 </div>

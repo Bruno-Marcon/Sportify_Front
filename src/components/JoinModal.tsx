@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { X, User, AlertCircle } from 'lucide-react';
 import { fetchUserInformation } from '../connection/apiConnection';
+import { toast } from 'react-toastify';
 
 interface Participant {
   name: string;
@@ -60,6 +61,11 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
   const handleJoin = () => {
     if (!userInfo) {
       setErrorMessage('Erro ao identificar o usuário.');
+      toast.error('Erro ao identificar o usuário.', {
+        position: 'top-right',
+        autoClose: 5000,
+        theme: 'colored',
+      });
       return;
     }
 
@@ -69,6 +75,21 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
 
     if (alreadyJoined) {
       setErrorMessage('Você já está confirmado nesta reserva.');
+      toast.warning('Você já está confirmado nesta reserva.', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
+      return;
+    }
+
+    if (booking.participants.length >= booking.maxPlayers) {
+      setErrorMessage('A reserva já atingiu o número máximo de jogadores.');
+      toast.error('A reserva já atingiu o número máximo de jogadores.', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
       return;
     }
 
@@ -76,8 +97,15 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
       name: userInfo.name,
       email: userInfo.email,
     };
-    console.log('Usuário entrou:', newParticipant);
+
     booking.participants.push(newParticipant);
+
+    toast.success('Você entrou na reserva com sucesso!', {
+      position: 'top-right',
+      autoClose: 3000,
+      theme: 'colored',
+    });
+
     onClose();
   };
 

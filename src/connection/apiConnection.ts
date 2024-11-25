@@ -13,7 +13,8 @@ import {
   UserInformationResponse,
   CourtsResponse, 
   CourtData, 
-  CreateBookingResponse ,
+  CreateBookingResponse, 
+  Booking,
 } from '../types/index';
 
 // ================================
@@ -120,9 +121,9 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
       throw new Error(`Erro na requisição: ${errorResponse.message || response.statusText}`);
     }
 
-    const result = await response.json();
+    const result: LoginResponse = await response.json();
     console.log("Resposta da API:", result);
-    return result as LoginResponse;
+    return result;
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     throw error;
@@ -165,6 +166,99 @@ export const fetchUserInformation = async (): Promise<UserInformationResponse> =
  * Obtém a lista de quadras disponíveis.
  * @returns Lista de quadras
  */
+export const createCourt = async (courtData: {
+  name: string;
+  category: string;
+  description: string;
+  max_players: number;
+  price: number;
+  status: string;
+}): Promise<Court> => {
+  const endpoint = "api/v1/courts"; // Ajuste conforme a sua API
+
+  console.log('Enviando dados para a API:', courtData); // Log dos dados enviados
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(courtData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao criar quadra.');
+    }
+
+    const result = await response.json();
+    console.log('Resposta da API após criação da quadra:', result); // Log da resposta
+    return result.data as Court; // Ajuste conforme a estrutura da resposta
+  } catch (error) {
+    console.error("Erro na função createCourt:", error);
+    throw error;
+  }
+};
+
+export const updateCourt = async (
+  courtId: number,
+  courtData: {
+    name: string;
+    category: string;
+    description: string;
+    max_players: number;
+    price: number;
+    status: string;
+  }
+): Promise<Court> => {
+  const endpoint = `api/v1/courts/${courtId}`; // Ajuste conforme a sua API
+
+  console.log(`Atualizando quadra com ID: ${courtId}`, courtData); // Log dos dados enviados
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'PUT', // ou 'PATCH' conforme a sua API
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(courtData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao atualizar quadra.');
+    }
+
+    const result = await response.json();
+    console.log('Resposta da API após atualização da quadra:', result); // Log da resposta
+    return result.data as Court; // Ajuste conforme a estrutura da resposta
+  } catch (error) {
+    console.error("Erro na função updateCourt:", error);
+    throw error;
+  }
+};
+
+export const deleteCourt = async (courtId: number): Promise<void> => {
+  const endpoint = `api/v1/admin/courts/${courtId}`;
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao excluir quadra.');
+    }
+
+    // Supondo que a API não retorne conteúdo no DELETE
+  } catch (error) {
+    console.error('Erro ao excluir quadra:', error);
+    throw error;
+  }
+};
+
 export const getCourts = async (): Promise<Court[]> => {
   const endpoint = "api/v1/courts";
 
@@ -189,13 +283,13 @@ export const getCourts = async (): Promise<Court[]> => {
       }
 
       return {
-        id: parseInt(court.id, 10), // id como number
+        id: parseInt(court.id, 10),
         name: court.attributes.name || "Nome não especificado",
-        max_Players: court.attributes.max_players || 0, // Usando 'maxPlayers'
+        maxPlayers: court.attributes.max_players || 0,
         category: court.attributes.category || "Categoria desconhecida",
         description: court.attributes.description || "Sem descrição",
         price: court.attributes.price || 0,
-        status: court.attributes.status || "Indisponível",
+        status: court.attributes.status || "closed",
       } as Court;
     });
   } catch (error) {
@@ -203,6 +297,7 @@ export const getCourts = async (): Promise<Court[]> => {
     throw error;
   }
 };
+
 
 // ================================
 // Endpoints de Reservas
@@ -296,6 +391,56 @@ export const fetchPublicBookings = async (): Promise<PublicBookingResponse> => {
     return result;
   } catch (error) {
     console.error('Erro ao buscar reservas públicas:', error);
+    throw error;
+  }
+};
+export const getBookings = async (): Promise<Booking[]> => {
+  const endpoint = "api/v1/bookings"; // Ajuste conforme a sua API
+
+  console.log('Buscando reservas na API...'); // Log de depuração
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao buscar reservas.');
+    }
+
+    const result = await response.json();
+    console.log('Reservas recebidas da API:', result); // Log da resposta
+    return result.data as Booking[]; // Ajuste conforme a estrutura da resposta
+  } catch (error) {
+    console.error("Erro na função getBookings:", error);
+    throw error;
+  }
+};
+
+/**
+ * Exclui uma reserva existente.
+ * @param bookingId ID da reserva a ser excluída
+ * @returns void
+ */
+export const deleteBooking = async (bookingId: string): Promise<void> => {
+  const endpoint = `api/v1/bookings/${bookingId}`; // Ajuste conforme a sua API
+
+  console.log(`Excluindo reserva com ID: ${bookingId}`); // Log de depuração
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao excluir reserva.');
+    }
+
+    console.log(`Reserva com ID: ${bookingId} excluída com sucesso.`); // Log de sucesso
+  } catch (error) {
+    console.error("Erro na função deleteBooking:", error);
     throw error;
   }
 };

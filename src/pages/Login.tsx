@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../connection/apiConnection';
@@ -7,6 +7,7 @@ import { loginUser } from '../connection/apiConnection';
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -35,26 +36,52 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen">
       {/* Coluna Esquerda */}
-      <div className="hidden lg:flex w-2/3 bg-gray-900 text-white items-center justify-center">
-        <div className="px-20 text-center">
-          <h1 className="text-5xl font-bold mb-6 text-green-500">Seja bem-vindo!</h1>
-          <p className="text-lg leading-7">
-            Seu melhor aplicativo de Agendamento de Quadras
+      <div className="hidden w-2/3 flex-col bg-emerald-700 text-white lg:flex">
+        <div className="flex flex-grow flex-col items-center justify-center px-20 text-center">
+          <img
+            src="src\public\image\logo.png"
+            alt="Logo Sportify"
+            className="mb-8 w-48 h-auto"
+          />
+          <h1 className="mb-4 text-5xl font-bold">Bem-vindo ao Sportify!</h1>
+          <p className="mb-8 text-xl">
+            O melhor aplicativo para agendamento de quadras esportivas.
           </p>
+
+          {/* Lista de benefícios */}
+          <ul className="space-y-4 text-left">
+            <li className="flex items-center">
+              <CheckCircle className="mr-2 h-6 w-6 text-white" />
+              <span className="text-lg">Agende quadras de forma rápida e fácil</span>
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="mr-2 h-6 w-6 text-white" />
+              <span className="text-lg">Encontre jogadores para completar seu time</span>
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="mr-2 h-6 w-6 text-white" />
+              <span className="text-lg">Participe de reservas públicas</span>
+            </li>
+          </ul>
+        </div>
+        <div className="p-6 text-center">
+          <p className="text-sm">&copy; 2023 Sportify. Todos os direitos reservados.</p>
         </div>
       </div>
 
       {/* Coluna Direita */}
-      <div className="flex w-full lg:w-1/3 items-center justify-center px-6">
+      <div className="flex w-full items-center justify-center bg-gray-100 px-6 lg:w-1/3">
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">Entre na sua conta</h1>
+          <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">
+            Entre na sua conta
+          </h1>
 
           <form onSubmit={handleSubmit} className="rounded-xl bg-white p-8 shadow-lg">
             {error && (
               <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className="h-5 w-5" />
                 {error}
               </div>
             )}
@@ -72,7 +99,7 @@ const Login: React.FC = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500"
                     placeholder="Digite seu e-mail"
                     required
                   />
@@ -91,13 +118,15 @@ const Login: React.FC = () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500"
                     placeholder="Digite sua senha"
                     required
                   />
                 </div>
                 <div className="mt-2 text-right">
-                  <button className="text-sm text-green-600 hover:underline">Esqueci minha senha</button>
+                  <button className="text-sm text-emerald-600 hover:underline">
+                    Esqueci minha senha
+                  </button>
                 </div>
               </div>
             </div>
@@ -105,7 +134,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-6 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {isLoading ? 'Entrando...' : 'Entrar'}
             </button>
@@ -115,7 +144,7 @@ const Login: React.FC = () => {
                 Ainda não possui uma conta?{' '}
                 <button
                   onClick={() => setIsRegisterModalOpen(true)}
-                  className="font-medium text-green-600 hover:text-green-500"
+                  className="font-medium text-emerald-600 hover:text-emerald-500"
                 >
                   Criar conta
                 </button>

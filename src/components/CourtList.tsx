@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
-import { getCourts } from '../connection/apiConnection'; // Importa a função para buscar quadras
-import BookingModal from './BookingModal'; // Importa o modal de reservas
+import { getCourts } from '../connection/apiConnection';
+import BookingModal from './BookingModal';
 
 interface Court {
   id: string;
@@ -22,10 +22,7 @@ const CourtList: React.FC = () => {
   useEffect(() => {
     const fetchCourts = async () => {
       try {
-        console.log('Iniciando a busca pelas quadras...');
         const data = await getCourts();
-
-        console.log('Dados recebidos da API:', data);
 
         const formattedCourts = data.map((court) => ({
           id: court.id,
@@ -37,7 +34,6 @@ const CourtList: React.FC = () => {
           status: court.status || 'Indisponível',
         }));
 
-        console.log('Quadras formatadas:', formattedCourts);
         setCourts(formattedCourts);
       } catch (error) {
         console.error('Erro ao carregar quadras:', error);
@@ -50,60 +46,53 @@ const CourtList: React.FC = () => {
   }, []);
 
   const handleCourtClick = (court: Court) => {
-    console.log('Quadra selecionada:', court);
     setSelectedCourt(court);
     setIsModalOpen(true);
   };
 
-  const handleBookingConfirm = (bookingData: { courtId: string; times: string[]; isPublic: boolean }) => {
-    console.log('Reserva confirmada:', bookingData);
-    setIsModalOpen(false);
-  };
-
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       {isLoading ? (
         <p className="text-center text-gray-700">Carregando quadras...</p>
       ) : courts.length === 0 ? (
         <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courts.map((court) => (
             <div
               key={court.id}
-              className="overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-md"
+              className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
             >
-              <div className="p-4">
-                <div className="mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{court.name}</h3>
-                  <p className="text-sm text-gray-600">{court.category}</p>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-gray-800">{court.name}</h3>
+                  <div className="ml-2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
+                    {court.category}
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <p className="text-sm text-gray-700">{court.description}</p>
+                <p className="mt-2 text-sm text-gray-600 line-clamp-3">{court.description}</p>
+                <div className="mt-4 flex items-center text-gray-600">
+                  <Users className="h-5 w-5" />
+                  <span className="ml-2 text-sm">Máximo {court.maxPlayers} jogadores</span>
                 </div>
-                <div className="mb-4 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm text-gray-600">
-                    Máximo {court.maxPlayers} Jogadores
-                  </span>
-                </div>
-                <div className="mt-2">
+                <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm text-gray-800">
                     <strong>Status:</strong> {court.status}
                   </p>
-                </div>
-                <div className="mt-2">
-                  <p className="text-sm text-gray-800">
-                    <strong>Preço:</strong> R$ {(court.price / 100).toFixed(2)}
+                  <p className="text-lg font-semibold text-emerald-600">
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(court.price / 100)}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleCourtClick(court)}
-                  className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-                >
-                  Reservar
-                </button>
               </div>
+              <button
+                onClick={() => handleCourtClick(court)}
+                className="mt-auto w-full rounded-none rounded-b-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              >
+                Reservar
+              </button>
             </div>
           ))}
         </div>
@@ -115,7 +104,6 @@ const CourtList: React.FC = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           court={selectedCourt}
-          onBookingConfirm={handleBookingConfirm}
         />
       )}
     </div>

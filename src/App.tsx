@@ -25,7 +25,7 @@ const App: React.FC = () => {
             <ProtectedRoute isAuthenticated={isAuthenticated}>
               <div className="flex w-full">
                 <Sidebar />
-                <div className="flex-1 pl-64">
+                <div className="flex-1">
                   <Header />
                   <Routes>
                     <Route path="/" element={<HomePage />} />

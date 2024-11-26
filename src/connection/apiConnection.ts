@@ -1,6 +1,6 @@
 
-import axios from 'axios';
 import {
+  UserResponse2,
   UserResponse,
   LoginResponse,
   AvailableTimesResponse,
@@ -18,7 +18,7 @@ import {
   BookingData,
   BookingByShareTokenResponse,
   CreatePlayerParams,
-  CreatePlayerResponse
+  JoinBookingResponse,
 } from '../types/index';
 
 // ================================
@@ -65,7 +65,7 @@ export const createUser = async (
   password: string,
   passwordConfirmation: string,
   document: string
-): Promise<UserResponse> => {
+): Promise<UserResponse2> => {
   const endpoint = "api/v1/users";
   const userData = {
     name,
@@ -94,7 +94,7 @@ export const createUser = async (
 
     const result = await response.json();
     console.log("Resposta da API:", result);
-    return result.data as UserResponse;
+    return result.data as UserResponse2;
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
     throw error;
@@ -152,9 +152,38 @@ export const createPlayer = async (
     return await response.json();
   } catch (error) {
     console.error('Erro ao criar jogador:', error);
+      throw error;
+  }
+};
+export const getUserInfo = async (): Promise<UserResponse> => {
+  try {
+
+    const token = getToken()
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado.');
+    }
+
+    const response = await fetch(`${BASE_URL}/api/v1/informations/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar informações do usuário: ${response.statusText}`);
+    }
+
+    const data: UserResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar informações do usuário:', error);
     throw error;
   }
 };
+
 
 // ================================
 // Endpoints de Usuário
@@ -538,6 +567,29 @@ export const deleteBooking = async (bookingId: number): Promise<void> => {
 
   } catch (error) {
     console.error("Erro na função deleteBooking:", error);
+    throw error;
+  }
+};
+
+export const joinBooking = async (bookingId: number): Promise<JoinBookingResponse> => {
+  const endpoint = `api/v1/bookings/${bookingId}/join`;
+
+  try {
+    // Certifique-se de que authorizedFetch utiliza o token automaticamente
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao ingressar na reserva.');
+    }
+
+    const result: JoinBookingResponse = await response.json();
+    console.log('Resposta da API ao ingressar na reserva:', result);
+    return result;
+  } catch (error) {
+    console.error('Erro ao ingressar na reserva:', error);
     throw error;
   }
 };

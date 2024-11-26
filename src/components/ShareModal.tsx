@@ -7,13 +7,12 @@ interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   bookingLink: string;
-  location: string;
   date: string;
   time: string;
   service: string;
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink, location, date, time}) => {
+const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, bookingLink,date, time}) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

@@ -1,26 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { X, User, AlertCircle } from 'lucide-react';
-import { fetchUserInformation } from '../connection/apiConnection';
+import { fetchUserInformation, joinBooking } from '../connection/apiConnection';
 import { toast } from 'react-toastify';
-
-interface Participant {
-  name: string;
-  email: string;
-}
-
-interface Court {
-  id: string;
-  name: string;
-  category: string;
-}
-
-interface Booking {
-  id: string;
-  time: string;
-  maxPlayers: number;
-  participants: Participant[];
-}
+import { Booking, Participant, Court, UserInformationResponse, JoinBookingResponse } from '../types';
 
 interface JoinModalProps {
   isOpen: boolean;
@@ -32,6 +15,7 @@ interface JoinModalProps {
 const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }) => {
   const [userInfo, setUserInfo] = useState<Participant | null>(null);
   const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,9 +23,9 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
       setIsLoadingUserInfo(true);
       setErrorMessage(null);
       try {
-        const response = await fetchUserInformation();
+        const response: UserInformationResponse = await fetchUserInformation();
         const user = response.data.attributes;
-        setUserInfo({ name: user.name, email: user.email });
+        setUserInfo({ id: parseInt(response.data.id, 10), name: user.name, isAuthenticated: true });
       } catch (error) {
         console.error('Erro ao buscar informações do usuário:', error);
         setErrorMessage('Erro ao carregar informações do usuário.');
@@ -58,7 +42,7 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
     }
   }, [isOpen]);
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!userInfo) {
       setErrorMessage('Erro ao identificar o usuário.');
       toast.error('Erro ao identificar o usuário.', {
@@ -70,7 +54,7 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
     }
 
     const alreadyJoined = booking.participants.some(
-      (participant) => participant.name === userInfo.name
+      (participant) => participant.id === userInfo.id
     );
 
     if (alreadyJoined) {
@@ -83,7 +67,10 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
       return;
     }
 
-    if (booking.participants.length >= booking.maxPlayers) {
+    // Obter o valor correto de Max Players da quadra
+    const maxPlayers = court.max_players;
+
+    if (booking.participants.length >= maxPlayers) {
       setErrorMessage('A reserva já atingiu o número máximo de jogadores.');
       toast.error('A reserva já atingiu o número máximo de jogadores.', {
         position: 'top-right',
@@ -93,20 +80,36 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
       return;
     }
 
-    const newParticipant = {
-      name: userInfo.name,
-      email: userInfo.email,
-    };
+    setIsJoining(true);
+    try {
+      const response: JoinBookingResponse = await joinBooking(booking.id);
+      const updatedParticipants = response.data.attributes.players;
 
-    booking.participants.push(newParticipant);
+      // Atualizar os participantes da reserva
+      booking.participants = updatedParticipants.map((player) => ({
+        id: player.id,
+        name: player.nickname || `Jogador ${player.id}`,
+        isAuthenticated: true,
+      }));
 
-    toast.success('Você entrou na reserva com sucesso!', {
-      position: 'top-right',
-      autoClose: 3000,
-      theme: 'colored',
-    });
+      toast.success('Você entrou na reserva com sucesso!', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
 
-    onClose();
+      onClose();
+    } catch (error) {
+      console.error('Erro ao ingressar na reserva:', error);
+      setErrorMessage('Erro ao ingressar na reserva. Tente novamente.');
+      toast.error('Erro ao ingressar na reserva. Tente novamente.', {
+        position: 'top-right',
+        autoClose: 5000,
+        theme: 'colored',
+      });
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   return (
@@ -147,11 +150,11 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
                 {court.category.charAt(0).toUpperCase() + court.category.slice(1)}
               </p>
               <p className="text-sm text-gray-600">
-                <span className="font-medium text-gray-800">Horário:</span> {booking.time}
+                <span className="font-medium text-gray-800">Horário:</span> {booking.startsOn}
               </p>
               <p className="text-sm text-gray-600">
                 <span className="font-medium text-gray-800">Jogadores:</span>{' '}
-                {booking.participants.length}/{booking.maxPlayers}
+                {booking.participants.length}/{court.max_players}
               </p>
             </div>
 
@@ -184,10 +187,10 @@ const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose, booking, court }
             </button>
             <button
               onClick={handleJoin}
-              disabled={!userInfo || isLoadingUserInfo}
+              disabled={!userInfo || isLoadingUserInfo || isJoining}
               className="w-full flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 sm:w-auto"
             >
-              {isLoadingUserInfo ? (
+              {isJoining ? (
                 <>
                   <svg
                     className="mr-2 h-4 w-4 animate-spin text-white"

@@ -3,6 +3,7 @@ import { getCourts } from '../connection/apiConnection';
 import BookingModal from './BookingModal';
 import ShareModal from './ShareModal';
 import { Court } from '../types/index';
+import WelcomeHeader from './WelcomeHeader'; // Importação do WelcomeHeader
 
 const CourtList: React.FC = () => {
   const [courts, setCourts] = useState<Court[]>([]);
@@ -69,6 +70,11 @@ const CourtList: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <WelcomeHeader />
+      </div>
+
       {isLoading ? (
         <p className="text-center text-gray-700">Carregando quadras...</p>
       ) : errorMessage ? (
@@ -178,13 +184,16 @@ const CourtList: React.FC = () => {
         />
       )}
 
-      {shareModalLink && (
-        <ShareModal
-          isOpen={!!shareModalLink}
-          onClose={() => setShareModalLink(null)}
-          bookingLink={shareModalLink}
-        />
-      )}
+        {shareModalLink && selectedCourt && (
+          <ShareModal
+            isOpen={!!shareModalLink}
+            onClose={() => setShareModalLink(null)}
+            bookingLink={shareModalLink}
+            date={new Date().toLocaleDateString('pt-BR')} // Data atual como exemplo
+            time={'19:00'} // Exemplo de horário fixo
+            service={selectedCourt.name || 'Serviço não informado'} // Nome da quadra
+          />
+        )}
     </div>
   );
 };

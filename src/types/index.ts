@@ -134,6 +134,37 @@ export interface BookingByShareToken {
   totalValue?: number;
 }
 
+
+export interface JoinBookingResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      starts_on: string;
+      ends_on: string;
+      total_value: number;
+      status: string;
+      share_token: string;
+      public: boolean;
+      user: {
+        id: number;
+        email: string;
+      };
+      court: {
+        id: number;
+        name: string;
+        category: string;
+        price: number;
+        max_players: number;
+      };
+      players: {
+        id: number;
+        nickname: string;
+        role: string | null;
+      }[];
+    };
+  };
+}
 /**
  * Interface para representar um Participante (Participant)
  */
@@ -152,7 +183,7 @@ export interface Participant {
 /**
  * Interface para a resposta de criação de usuário
  */
-export interface UserResponse {
+export interface UserResponse2 {
   id: string;
   type: string;
   attributes: {
@@ -161,6 +192,9 @@ export interface UserResponse {
     document: string;
     role: 'admin' | 'user'; 
   };
+}
+export interface UserResponse {
+  data: UserData;
 }
 export interface User {
   id: number;
@@ -171,6 +205,18 @@ export interface User {
   updated_at: string;
   role: 'admin' | 'user';
 }
+export interface UserAttributes {
+  email: string;
+  name: string;
+  document: string;
+  role: string;
+}
+export interface UserData {
+  id: string;
+  type: string;
+  attributes: UserAttributes;
+}
+
 
 /**
  * Interface para a resposta de login
@@ -185,6 +231,8 @@ export interface LoginResponse {
     role: 'admin' | 'user'; 
   };
 }
+
+
 
 /**
  * Interface para os horários disponíveis
@@ -235,6 +283,8 @@ export interface PublicBookingResponse {
     };
   }[];
 }
+
+
 
 /**
  * Interface para as informações do usuário

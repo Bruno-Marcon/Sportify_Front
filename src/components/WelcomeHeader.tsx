@@ -1,7 +1,57 @@
-import React from 'react';
-import { Bell, Calendar, Trophy, Clock, Target } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Calendar, Clock } from 'lucide-react';
+import { getCourts } from '../connection/apiConnection';
+import { getUserInfo } from '../connection/apiConnection'; // Função para obter dados do usuário
+import { Court } from '../types/index';
+import { UserAttributes } from '../types/index';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay } from 'swiper/modules'; // Importa o Autoplay do Swiper
+import BookingModal from './BookingModal';
+import ShareModal from './ShareModal';
+import 'swiper/swiper-bundle.css';
 
 export default function WelcomeHeader() {
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [user, setUser] = useState<UserAttributes | null>(null); // Estado para o usuário logado
+
+  const limit = 3; // Exibir 3 quadras por slide
+
+  useEffect(() => {
+    // Carregar informações das quadras
+    const fetchCourts = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      try {
+        const data = await getCourts(1, 15);
+        setCourts(data.courts);
+      } catch (error) {
+        console.error('Erro ao carregar quadras:', error);
+        setErrorMessage('Erro ao carregar quadras. Tente novamente mais tarde.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Carregar informações do usuário
+    const fetchUser = async () => {
+      try {
+        const userData = await getUserInfo();
+        setUser(userData.data.attributes);
+      } catch (error) {
+        console.error('Erro ao carregar informações do usuário:', error);
+      }
+    };
+
+    fetchCourts();
+    fetchUser();
+  }, []);
+
   const stats = [
     {
       id: 1,
@@ -10,7 +60,7 @@ export default function WelcomeHeader() {
       info: 'Quadra Society 2',
       icon: Calendar,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
     },
     {
       id: 2,
@@ -19,27 +69,30 @@ export default function WelcomeHeader() {
       info: 'Este mês',
       icon: Clock,
       color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-green-50',
     },
-    {
-      id: 3,
-      label: 'Nível do Jogador',
-      value: 'Ouro',
-      info: '450 pontos',
-      icon: Trophy,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
-    },
-    {
-      id: 4,
-      label: 'Meta Mensal',
-      value: '80%',
-      info: '8/10 jogos',
-      icon: Target,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    }
   ];
+
+  const openBookingModal = (court: Court) => {
+    setSelectedCourt(court);
+    setIsBookingModalOpen(true);
+  };
+
+  const closeBookingModal = () => {
+    setSelectedCourt(null);
+    setIsBookingModalOpen(false);
+  };
+
+  const handleBookingComplete = (shareableLink: string) => {
+    setIsBookingModalOpen(false);
+    setShareLink(shareableLink);
+    setIsShareModalOpen(true);
+  };
+
+  const closeShareModal = () => {
+    setShareLink(null);
+    setIsShareModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -47,7 +100,7 @@ export default function WelcomeHeader() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold">
-              Olá, João! 👋
+              {user ? `Olá, ${user.name}! 👋` : 'Olá! 👋'}
             </h1>
             <p className="mt-2 text-green-100">
               Pronto para mais um jogo? Confira as quadras disponíveis agora
@@ -87,53 +140,82 @@ export default function WelcomeHeader() {
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Quadras em Destaque</h2>
-          <button className="text-green-600 hover:text-green-700 text-sm font-medium">
-            Ver todas
-          </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {featuredCourts.map((court) => (
-            <div key={court.id} className="group relative rounded-lg overflow-hidden">
-              <img
-                src={court.image}
-                alt={court.name}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white font-semibold">{court.name}</h3>
-                <p className="text-green-100 text-sm">{court.price}</p>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                  Reservar Agora
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+
+        {isLoading ? (
+          <p className="text-center text-gray-500">Carregando quadras em destaque...</p>
+        ) : errorMessage ? (
+          <p className="text-center text-red-500">{errorMessage}</p>
+        ) : (
+          <Swiper
+            spaceBetween={20}
+            slidesPerView={1}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+            }}
+            modules={[Autoplay]}
+          >
+            {Array.from({ length: Math.ceil(courts.length / limit) }, (_, index) => {
+              const courtSlice = courts.slice(index * limit, index * limit + limit);
+              return (
+                <SwiperSlide key={index}>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {courtSlice.map((court) => (
+                      <div
+                        key={court.id}
+                        className="group relative rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => openBookingModal(court)}
+                      >
+                        <img
+                          src={'src/public/image/logo.png'}
+                          alt={court.name}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="text-white font-semibold">{court.name}</h3>
+                          <p className="text-green-100 text-sm">
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(court.price)}
+                          </p>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                          <p className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            Reservar Agora
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+        )}
       </div>
+
+      {selectedCourt && (
+        <BookingModal
+          isOpen={isBookingModalOpen}
+          onClose={closeBookingModal}
+          court={selectedCourt}
+          onBookingComplete={(link: string) => handleBookingComplete(link)}
+        />
+      )}
+
+      {shareLink && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={closeShareModal}
+          bookingLink={shareLink}
+          date={new Date().toLocaleDateString('pt-BR')}
+          time={'19:00'}
+          service={selectedCourt?.name || 'Serviço não informado'}
+        />
+      )}
     </div>
   );
 }
-
-const featuredCourts = [
-  {
-    id: 1,
-    name: 'Quadra Society Premium',
-    price: 'R$ 120/hora',
-    image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 2,
-    name: 'Quadra Futsal Coberta',
-    price: 'R$ 100/hora',
-    image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 3,
-    name: 'Quadra Vôlei Indoor',
-    price: 'R$ 90/hora',
-    image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  }
-];

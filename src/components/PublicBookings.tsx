@@ -2,27 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Star, Clock } from 'lucide-react';
 import { fetchPublicBookings } from '../connection/apiConnection';
 import JoinModal from './JoinModal';
-
-interface Participant {
-  name: string;
-  position: string;
-}
-
-interface Court {
-  id: string;
-  name: string;
-  category: string;
-}
-
-interface Booking {
-  id: string;
-  time: string;
-  currentPlayers: number;
-  maxPlayers: number;
-  participants: Participant[];
-  court: Court;
-  status: string;
-}
+import { PublicBookingResponse, Participant, Booking, Court } from '../types';
 
 const PublicBookings: React.FC = () => {
   const [publicBookings, setPublicBookings] = useState<Booking[]>([]);
@@ -32,31 +12,26 @@ const PublicBookings: React.FC = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await fetchPublicBookings();
-        const bookings: Booking[] = response.data.map(
-          (b: { id: string; attributes: any }) => ({
-            id: b.id,
-            time: new Date(b.attributes.starts_on).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            currentPlayers: b.attributes.players.length,
-            maxPlayers:
-              b.attributes.court.category === 'soccer' ? 22 : b.attributes.court.max_players,
-            participants: b.attributes.players.map(
-              (player: { name: string; position: string }) => ({
-                name: player.name || 'Jogador desconhecido',
-                position: player.position || 'Não especificado',
-              })
-            ),
-            court: {
-              id: b.attributes.court.id,
-              name: b.attributes.court.name,
-              category: b.attributes.court.category,
-            },
-            status: b.attributes.status,
-          })
-        );
+        const response: PublicBookingResponse = await fetchPublicBookings();
+        const bookings: Booking[] = response.data.map((b) => ({
+          id: b.id,
+          time: new Date(b.attributes.starts_on).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          currentPlayers: b.attributes.players.length,
+          maxPlayers: b.attributes.court.max_players ?? 22, // Valor padrão
+          participants: b.attributes.players.map((player) => ({
+            name: player.nickname || player.name || 'Jogador desconhecido',
+            position: player.role || 'Não especificado',
+          })),
+          court: {
+            id: b.attributes.court.id.toString(),
+            name: b.attributes.court.name,
+            category: b.attributes.court.category,
+          },
+          status: b.attributes.status,
+        }));
         setPublicBookings(bookings);
       } catch (error) {
         console.error('Erro ao buscar reservas públicas:', error);
@@ -155,10 +130,6 @@ const PublicBookings: React.FC = () => {
           </p>
         )}
       </div>
-
-      <button className="mt-6 w-full px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors text-sm font-medium">
-        Ver Todas as Reservas
-      </button>
 
       {selectedBooking && (
         <JoinModal

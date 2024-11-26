@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute'; 
 import ToastProvider from './components/ToastContainer'; 
 import { AuthProvider } from './context/AuthContext';
+import CourtList from './components/CourtList';
+import PublicBookings from './components/PublicBookings';
 
 const App: React.FC = () => {
   return (
@@ -28,7 +30,8 @@ const App: React.FC = () => {
                   <div className="flex-1">
                     <Header />
                     <Routes>
-                      <Route path="/" element={<HomePage />} />                    
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/court" element={<CourtList />} />                    
                       <Route
                         path="/admin"
                         element={
@@ -40,6 +43,7 @@ const App: React.FC = () => {
                       
                     </Routes>
                   </div>
+                  <PublicBookings />
                 </div>
               </ProtectedRoute>
             }

@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Menu, Shield, Settings, HelpCircle } from 'lucide-react';
+import { Home, Menu, Shield, Settings, HelpCircle, Layout } from 'lucide-react'; // Importei o ícone "Layout"
 import { AuthContext } from '../context/AuthContext';
 
 interface NavItem {
@@ -18,6 +18,7 @@ const Sidebar: React.FC = () => {
 
   const navItems: NavItem[] = [
     { icon: Home, label: 'Tela inicial', path: '/' },
+    { icon: Layout, label: 'Quadras', path: '/court' },
   ];
 
   if (isAdmin) {
@@ -56,7 +57,7 @@ const Sidebar: React.FC = () => {
                   key={label}
                   to={path}
                   className={({ isActive }) =>
-                    `w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    `w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive
                         ? 'bg-green-50 text-green-700'
                         : 'text-gray-600 hover:bg-gray-50'
@@ -64,8 +65,8 @@ const Sidebar: React.FC = () => {
                   }
                   onClick={() => setIsOpen(false)}
                 >
-                  <Icon className="h-5 w-5 mr-3" />
-                  {label}
+                  <Icon className="h-5 w-5 mr-2 text-gray-500" />
+                  <span className="text-gray-700">{label}</span>
                 </NavLink>
               ))}
             </nav>
@@ -79,7 +80,7 @@ const Sidebar: React.FC = () => {
                   key={label}
                   to={path}
                   className={({ isActive }) =>
-                    `w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    `w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive
                         ? 'bg-green-50 text-green-700'
                         : 'text-gray-600 hover:bg-gray-50'
@@ -87,8 +88,8 @@ const Sidebar: React.FC = () => {
                   }
                   onClick={() => setIsOpen(false)}
                 >
-                  <Icon className="h-5 w-5 mr-3" />
-                  {label}
+                  <Icon className="h-5 w-5 mr-2 text-gray-500" />
+                  <span className="text-gray-700">{label}</span>
                 </NavLink>
               ))}
             </nav>

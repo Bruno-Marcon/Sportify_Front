@@ -10,11 +10,13 @@ export interface CourtAttributes {
   price: number;
   status: string;
 }
+
 export interface CourtData {
   id: string;
   type: string;
   attributes: CourtAttributes;
 }
+
 export interface CourtsResponse {
   data: CourtData[];
   meta: {
@@ -23,14 +25,7 @@ export interface CourtsResponse {
     total_count: number;
   };
 }
-export interface PagedCourtsResponse {
-  courts: Court[];
-  meta: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-  };
-}
+
 export interface Court {
   id: number;
   name: string;
@@ -41,9 +36,10 @@ export interface Court {
   status: string;
 }
 
-/**
- * Interface para representar uma Reserva (Booking)
- */
+// ================================
+// Interfaces de Reservas (Booking)
+// ================================
+
 export interface BookingAttributes {
   starts_on: string;
   ends_on: string;
@@ -56,10 +52,11 @@ export interface BookingAttributes {
     email: string;
   };
   court: {
-    id: string;
+    id: number;
     name: string;
     category: string;
     price: number;
+    max_players?: number; // Opcional
   };
   players: Participant[];
 }
@@ -68,10 +65,6 @@ export interface BookingData {
   id: string;
   type: string;
   attributes: BookingAttributes;
-}
-
-export interface BookingByShareTokenResponse {
-  data: BookingData;
 }
 
 export interface BookingsResponse {
@@ -83,31 +76,6 @@ export interface BookingsResponse {
   };
 }
 
-export interface PagedBookingsResponse {
-  bookings: Booking[];
-  meta: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-  };
-}
-
-export interface CreatePlayerParams {
-  shareToken: string;
-  nickname: string;
-  role: string;
-}
-
-export interface CreatePlayerResponse {
-  id: string;
-  nickname: string;
-  role: string;
-  createdAt: string;
-}
-
-export interface CreateBookingResponse {
-  data: BookingData;
-}
 export interface Booking {
   id: number;
   courtId: number;
@@ -121,63 +89,21 @@ export interface Booking {
   totalValue?: number;
 }
 
-export interface BookingByShareToken {
-  id: number;
-  courtId: number;
-  startsOn: string;
-  endsOn: string;
-  isPublic: boolean;
-  maxPlayers: number;
-  currentPlayers: number;
-  participants: Participant[];
-  status?: string;
-  totalValue?: number;
-}
+// ================================
+// Participantes
+// ================================
 
-
-export interface JoinBookingResponse {
-  data: {
-    id: string;
-    type: string;
-    attributes: {
-      starts_on: string;
-      ends_on: string;
-      total_value: number;
-      status: string;
-      share_token: string;
-      public: boolean;
-      user: {
-        id: number;
-        email: string;
-      };
-      court: {
-        id: number;
-        name: string;
-        category: string;
-        price: number;
-        max_players: number;
-      };
-      players: {
-        id: number;
-        nickname: string;
-        role: string | null;
-      }[];
-    };
-  };
-}
-/**
- * Interface para representar um Participante (Participant)
- */
 export interface Participant {
   id: number;
   name: string;
+  nickname?: string;
+  role?: string;
   cpf?: string;
   isAuthenticated: boolean;
 }
 
-
 // ================================
-// Interfaces para Respostas da API
+// Interfaces de API
 // ================================
 
 /**
@@ -251,49 +177,49 @@ export interface AvailableTimesResponse {
   }[];
 }
 
-/**
- * Interface para os parâmetros de criação de reserva
- */
 export interface CreateBookingParams {
   startsOn: string; // Formato ISO (exemplo: "2022-11-25T20:00:00Z")
   courtId: number;
   isPublic: boolean;
 }
 
-/**
- * Interface para a resposta das reservas públicas
- */
+export interface CreateBookingResponse {
+  data: BookingData;
+}
+
 export interface PublicBookingResponse {
   data: {
     id: string;
     type: string;
-    attributes: {
-      starts_on: string;
-      ends_on: string;
-      total_value: number;
-      status: string;
-      share_token: string;
-      public: boolean;
-      user: {
-        id: number;
-        email: string;
-      };
-      court: {
-        id: number;
-        name: string;
-        category: string;
-        price: number;
-      };
-      players: Participant[];
-    };
+    attributes: BookingAttributes;
   }[];
 }
 
+export interface JoinBookingResponse {
+  data: BookingData;
+}
 
+// ================================
+// Interfaces de Usuário
+// ================================
 
-/**
- * Interface para as informações do usuário
- */
+export interface UserResponse {
+  data: UserData;
+}
+
+export interface UserAttributes {
+  email: string;
+  name: string;
+  document: string;
+  role: 'admin' | 'user';
+}
+
+export interface UserData {
+  id: string;
+  type: string;
+  attributes: UserAttributes;
+}
+
 export interface UserInformationResponse {
   data: {
     id: string;
@@ -303,5 +229,16 @@ export interface UserInformationResponse {
       name: string;
       document: string;
     };
+  };
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: number;
+    email: string;
+    created_at: string;
+    updated_at: string;
+    role: 'admin' | 'user';
   };
 }

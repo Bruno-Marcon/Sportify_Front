@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Bell, Calendar, Clock } from 'lucide-react';
 import { getCourts } from '../connection/apiConnection';
 import { getUserInfo } from '../connection/apiConnection'; // Função para obter dados do usuário
 import { Court } from '../types/index';
@@ -97,7 +96,7 @@ export default function WelcomeHeader() {
         </div>
 
         {isLoading ? (
-          <p className="text-center text-gray-500">Carregando quadras em destaque...</p>
+         <p className="text-center text-red-500">{}</p>
         ) : errorMessage ? (
           <p className="text-center text-red-500">{errorMessage}</p>
         ) : (

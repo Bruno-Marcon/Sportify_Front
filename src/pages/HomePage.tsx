@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BookingModal from '../components/BookingModal';
 import ShareModal from '../components/ShareModal';
-import { CourtsBookings,MyBookings } from '../components/MyBookings';
+import { CourtsBookings, MyBookings } from '../components/MyBookings';
 import WelcomeHeader from '../components/WelcomeHeader';
+import { WelcomeHeaderSkeleton } from '../components/skeleton/WelcomeHeaderSkeleton'; // Import do Skeleton
 
 const HomePage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'bookings' | 'courtsBookings'>('bookings'); // Tipo explícito
   const [isBookingModalOpen, setBookingModalOpen] = useState(false);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Estado para controlar o carregamento
+
+  // Simular carregamento (substituir pela lógica real se necessário)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000); // Carregamento falso por 2 segundos
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
-            <WelcomeHeader />
+            {/* Exibir Skeleton ou WelcomeHeader */}
+            {isLoading ? <WelcomeHeaderSkeleton /> : <WelcomeHeader />}
 
             <div className="flex justify-center space-x-4 my-6">
               <button
@@ -35,7 +44,7 @@ const HomePage: React.FC = () => {
                     : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                Reservas Concluidas
+                Reservas Concluídas
               </button>
             </div>
 

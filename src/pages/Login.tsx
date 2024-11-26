@@ -65,7 +65,7 @@ const Login: React.FC = () => {
             <img
               src="src/public/image/logo.png"
               alt="Logo Sportify"
-              className="mb-12 h-20 w-auto"
+              className="mb-12 h-80 w-auto"
             />
             <h1 className="mb-6 text-center text-5xl font-bold leading-tight">
               Transforme sua paixão por esportes em momentos incríveis
@@ -93,7 +93,7 @@ const Login: React.FC = () => {
       <div className="flex w-full flex-col justify-center bg-white px-8 lg:w-1/3">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Bem-vindo de volta!</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Seja bem-vindo!</h2>
             <p className="mt-2 text-gray-600">Entre para continuar sua jornada esportiva</p>
           </div>
 

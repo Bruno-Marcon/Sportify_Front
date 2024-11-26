@@ -5,7 +5,7 @@ import { CourtsBookings,MyBookings } from '../components/MyBookings';
 import WelcomeHeader from '../components/WelcomeHeader';
 
 const HomePage: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<'bookings' | 'courtsBookings'>('courtsBookings'); // Tipo explícito
+  const [activeSection, setActiveSection] = useState<'bookings' | 'courtsBookings'>('bookings'); // Tipo explícito
   const [isBookingModalOpen, setBookingModalOpen] = useState(false);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
 
@@ -16,7 +16,6 @@ const HomePage: React.FC = () => {
           <div className="max-w-4xl mx-auto">
             <WelcomeHeader />
 
-            {/* Navegação entre seções */}
             <div className="flex justify-center space-x-4 my-6">
               <button
                 onClick={() => setActiveSection('bookings')}
@@ -40,7 +39,6 @@ const HomePage: React.FC = () => {
               </button>
             </div>
 
-            {/* Conteúdo da seção */}
             {activeSection === 'bookings' && <MyBookings />}
             {activeSection === 'courtsBookings' && <CourtsBookings />}
           </div>

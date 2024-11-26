@@ -79,16 +79,18 @@ const BookingCard: React.FC<{ booking: Booking; courtName: string }> = ({ bookin
       </div>
       <p className="text-sm">
         <span className="font-medium">Participantes:</span>{' '}
-        {booking.participants.map((p) => p.name).join(', ')}
+        {booking.participants.length}
       </p>
       <p className="text-sm">
         <span className="font-medium">Valor:</span>{' '}
         <span className="text-green-700 font-semibold">
-          R$ {booking.totalValue?.toFixed(2)}
+        {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(booking?.totalValue ?? 0 / 100)}
         </span>
       </p>
     </div>
-
     <div className="p-4 flex justify-between items-center border-t">
       <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">
         Gerenciar

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, Switch } from '@headlessui/react';
 import { X, AlertCircle } from 'lucide-react';
 import { getAvailableTimes, createBooking } from '../connection/apiConnection';
-import { Court, AvailableTimesResponse, CreateBookingResponse } from '../types/index';
+import { Court, AvailableTimesResponse, CreateBookingResponse, Booking } from '../types/index';
 import { toast } from 'react-toastify';
 
 interface BookingModalProps {
@@ -10,6 +10,7 @@ interface BookingModalProps {
   onClose: () => void;
   court: Court | null;
   onBookingComplete: (bookingLink: string) => void;
+  userId: number;
 }
 
 const Spinner: React.FC<{ size?: number }> = ({ size = 24 }) => (
@@ -42,6 +43,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   onClose,
   court,
   onBookingComplete,
+  userId, // Identificador do usuário
 }) => {
   const [availableTimes, setAvailableTimes] = useState<{ start: string; end: string }[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -49,7 +51,9 @@ const BookingModal: React.FC<BookingModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userBookings, setUserBookings] = useState<Booking[]>([]); // Reservas do usuário
 
+  // Buscar horários disponíveis
   const fetchAvailableTimes = async () => {
     if (!court) return;
 
@@ -59,6 +63,11 @@ const BookingModal: React.FC<BookingModalProps> = ({
     try {
       const data: AvailableTimesResponse = await getAvailableTimes(court.id);
       setAvailableTimes(data.availableTimes);
+
+      // Simular busca de reservas do usuário
+      // Aqui, deve ser adicionada uma chamada para buscar as reservas do usuário atual
+      const userBookingsResponse: Booking[] = []; // Substitua pelo retorno da API real
+      setUserBookings(userBookingsResponse);
     } catch (error: unknown) {
       console.error('Erro ao buscar horários disponíveis:', error);
       if (error instanceof Error) {
@@ -80,6 +89,21 @@ const BookingModal: React.FC<BookingModalProps> = ({
   const handleBooking = async () => {
     if (!selectedTime) {
       setErrorMessage('Selecione um horário para agendar.');
+      return;
+    }
+
+    // Verificar se o usuário já possui reserva no horário
+    const existingBooking = userBookings.find(
+      (booking) => booking.startsOn === selectedTime && booking.courtId === court?.id
+    );
+
+    if (existingBooking) {
+      setErrorMessage('Você já possui uma reserva neste horário.');
+      toast.error('Você já possui uma reserva neste horário.', {
+        position: 'top-right',
+        autoClose: 5000,
+        theme: 'colored',
+      });
       return;
     }
 
@@ -130,7 +154,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   const formattedPrice = court
-    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(court.price / 100)
+    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(court.price)
     : '';
 
   return (
@@ -158,6 +182,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             </div>
           )}
 
+          {/* Corpo do Modal */}
           <div className="mt-6">
             {isLoading ? (
               <div className="flex justify-center">

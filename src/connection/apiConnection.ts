@@ -20,6 +20,7 @@ import {
   CreatePlayerParams,
   JoinBookingResponse,
   Stat,
+  BookingDetailsResponse,
 } from '../types/index';
 
 // ================================
@@ -220,18 +221,29 @@ export const getUserStats = async (): Promise<Stat[]> => {
 
 
 export const fetchUserInformation = async (): Promise<UserInformationResponse> => {
-  const endpoint = 'api/v1/informations/me';
+  const endpoint = 'api/v1/informations/me/activity';
 
   try {
+    console.log('Iniciando fetch para:', `${BASE_URL}/${endpoint}`);
+
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
       method: 'GET',
     });
+
+    console.log('Status da resposta:', response.status);
 
     if (!response.ok) {
       throw new Error(`Erro na requisição: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as UserInformationResponse;
+    console.log('Resposta recebida do backend:', result);
+
+    // Validar se os dados retornados estão no formato esperado
+    if (!result.data || !Array.isArray(result.data)) {
+      throw new Error('Formato inesperado na resposta do backend.');
+    }
+
     return result;
   } catch (error) {
     console.error('Erro ao buscar informações do usuário:', error);
@@ -543,6 +555,27 @@ export const getBookings = async (
     };
   } catch (error) {
     console.error("Erro ao buscar reservas:", error);
+    throw error;
+  }
+};
+export const listBookingDetails = async (bookingId: number): Promise<BookingDetailsResponse> => {
+  const endpoint = `api/v1/bookings/${bookingId}`;
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao buscar detalhes da reserva.');
+    }
+
+    const result: BookingDetailsResponse = await response.json();
+    console.log('Resposta da API ListBookingDetails:', result);
+    return result;
+  } catch (error) {
+    console.error('Erro ao buscar detalhes da reserva:', error);
     throw error;
   }
 };

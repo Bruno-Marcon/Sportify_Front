@@ -38,7 +38,7 @@ const PublicBookingCard: React.FC<{
         </div>
         <div className="flex items-center">
           <Star className="h-4 w-4 mr-1" />
-          {booking.currentPlayers}/{booking.maxPlayers} Jogadores
+          {booking.participants.length}/{booking.court.maxPlayers} Jogadores
         </div>
       </div>
 
@@ -52,14 +52,14 @@ const PublicBookingCard: React.FC<{
               {participant.name[0]}
             </div>
           ))}
-          {booking.currentPlayers > 3 && (
+          {booking.participants.length > 3 && (
             <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs text-gray-600">
-              +{booking.currentPlayers - 3}
+              +{booking.participants.length - 3}
             </div>
           )}
         </div>
         <span className="text-sm text-gray-600">
-          {booking.maxPlayers - booking.currentPlayers} vagas
+          {booking.court.maxPlayers - booking.participants.length} vagas
         </span>
       </div>
 
@@ -84,28 +84,34 @@ const PublicBookings: React.FC = () => {
     const fetchBookings = async () => {
       setIsLoading(true);
       setError(null);
-
+    
       try {
         const response: PublicBookingResponse = await fetchPublicBookings();
+    
         const bookings: Booking[] = response.data.map((b) => ({
           id: b.id,
           time: new Date(b.attributes.starts_on).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           }),
-          currentPlayers: b.attributes.players.length,
-          maxPlayers: b.attributes.court.max_players ?? 22,
-          participants: b.attributes.players.map((player) => ({
-            name: player.nickname || player.name || 'Jogador desconhecido',
-            position: player.role || 'Não especificado',
-          })),
+          startsOn: b.attributes.starts_on,
+          endsOn: b.attributes.ends_on,
+          status: b.attributes.status,
+          isPublic: b.attributes.public,
           court: {
-            id: b.attributes.court.id.toString(),
+            id: b.attributes.court.id,
             name: b.attributes.court.name,
             category: b.attributes.court.category,
+            price: b.attributes.court.price,
+            maxPlayers: b.attributes.court.max_players || 22, // Ajuste para maxPlayers
           },
-          status: b.attributes.status,
+          participants: b.attributes.players.map((player) => ({
+            id: player.id,
+            name: player.nickname || 'Jogador desconhecido',
+            position: player.role || 'Não especificado',
+          })),
         }));
+    
         setPublicBookings(bookings);
       } catch (error) {
         console.error('Erro ao buscar reservas públicas:', error);

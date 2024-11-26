@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Clock, Users2, Calendar, AlertCircle } from 'lucide-react';
-import { getBookings, getCourts } from '../connection/apiConnection';
-import { Booking, Court } from '../types';
+import { fetchUserInformation } from '../connection/apiConnection';
+import { BookingAttributes, Court3, UserInformationResponse } from '../types';
 import { BookingsGridSkeleton } from '../components/BookingSkeleton';
 
 const getStatusColor = (status: string) => {
@@ -46,67 +46,61 @@ const ErrorState: React.FC<{ message: string }> = ({ message }) => (
   </div>
 );
 
-const BookingCard: React.FC<{ booking: Booking; courtName: string }> = ({ booking, courtName }) => (
-  <div className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 relative">
-    {/* Status no canto superior direito */}
-    <span
-      className={`absolute top-4 right-4 inline-flex items-center px-3 py-1 text-sm font-medium rounded-lg ${getStatusColor(
-        booking.status || 'pendente'
-      )}`}
-    >
-      {booking.status || 'Pendente'}
-    </span>
+const BookingCard: React.FC<{ booking: BookingAttributes; court: Court3 }> = ({ booking, court }) => {
+  if (!booking || !court) {
+    console.error('Dados inválidos recebidos no BookingCard:', { booking, court });
+    return null; // Retorna nulo se os dados estiverem inválidos
+  }
 
-    <div className="p-4 flex justify-between items-start">
-      <div>
-        <h3 className="text-xl font-semibold text-gray-900">{courtName}</h3>
-      </div>
-      <div className="text-gray-400">
-        <Users2 className="w-6 h-6" />
-      </div>
-    </div>
+  return (
+    <div className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 relative">
+      <span
+        className={`absolute top-4 right-4 inline-flex items-center px-3 py-1 text-sm font-medium rounded-lg ${getStatusColor(
+          booking.status
+        )}`}
+      >
+        {booking.status || 'Pendente'}
+      </span>
 
-    <div className="p-4 text-gray-600 space-y-2 border-t">
-      <div className="flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-green-600" />
-        <span>{formatDate(booking.startsOn)}</span>
+      <div className="p-4 flex justify-between items-start">
+        <h3 className="text-xl font-semibold text-gray-900">{court.name}</h3>
+        <div className="text-gray-400">
+          <Users2 className="w-6 h-6" />
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Clock className="w-5 h-5 text-green-600" />
-        <span>
-          {formatTime(booking.startsOn)} - {formatTime(booking.endsOn)}
-        </span>
+
+      <div className="p-4 text-gray-600 space-y-2 border-t">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-green-600" />
+          <span>{formatDate(booking.starts_on)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="w-5 h-5 text-green-600" />
+          <span>
+            {formatTime(booking.starts_on)} - {formatTime(booking.ends_on)}
+          </span>
+        </div>
+        <p className="text-sm">
+          <span className="font-medium">Participantes:</span> {booking.players?.length || 0}
+        </p>
+        <p className="text-sm">
+          <span className="font-medium">Valor:</span>{' '}
+          <span className="text-green-700 font-semibold">
+            {new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            }).format(booking.total_value / 100)}
+          </span>
+        </p>
       </div>
-      <p className="text-sm">
-        <span className="font-medium">Participantes:</span>{' '}
-        {booking.participants.length}
-      </p>
-      <p className="text-sm">
-        <span className="font-medium">Valor:</span>{' '}
-        <span className="text-green-700 font-semibold">
-        {new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          }).format(booking?.totalValue ?? 0 / 100)}
-        </span>
-      </p>
     </div>
-    <div className="p-4 flex justify-between items-center border-t">
-      <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">
-        Gerenciar
-      </button>
-      <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-        Editar
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 const UnifiedBookings: React.FC<{ activeSection: 'agendado' | 'concluido' }> = ({
   activeSection,
 }) => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [courts, setCourts] = useState<Court[]>([]);
+  const [bookings, setBookings] = useState<BookingAttributes[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,12 +109,34 @@ const UnifiedBookings: React.FC<{ activeSection: 'agendado' | 'concluido' }> = (
       try {
         setIsLoading(true);
         setError(null);
-
-        // Busca quadras e reservas em paralelo
-        const [courtsResponse, bookingsResponse] = await Promise.all([getCourts(), getBookings()]);
-
-        setCourts(courtsResponse.courts);
-        setBookings(bookingsResponse.bookings);
+  
+        console.log('Iniciando busca de informações do usuário...');
+        const userInfo: UserInformationResponse = await fetchUserInformation();
+  
+        console.log('Resposta do backend para informações do usuário:', userInfo);
+  
+        if (!userInfo.data || userInfo.data.length === 0) {
+          throw new Error('Nenhuma informação do usuário foi retornada pelo backend.');
+        }
+  
+        // ID do usuário logado
+        const userId = userInfo.data[0]?.attributes?.user?.id;
+        if (!userId) {
+          throw new Error('ID do usuário não encontrado na resposta do backend.');
+        }
+  
+        console.log('ID do usuário logado:', userId);
+  
+        // Filtrar as reservas associadas ao usuário logado
+        const userBookings = userInfo.data.map((bookingData) => ({
+          ...bookingData.attributes,
+          id: bookingData.id, // Inclua o ID da reserva no mapeamento
+          court: bookingData.attributes.court, // Inclua o campo court corretamente
+        }))
+  
+        console.log('Reservas filtradas para o usuário logado:', userBookings);
+  
+        setBookings(userBookings);
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
         setError('Erro ao carregar dados. Tente novamente mais tarde.');
@@ -128,14 +144,17 @@ const UnifiedBookings: React.FC<{ activeSection: 'agendado' | 'concluido' }> = (
         setIsLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  
+  
 
-  // Filtra as reservas conforme a seção ativa
   const filteredBookings = bookings.filter(
     (booking) => booking.status?.toLowerCase() === activeSection
   );
+
+  console.log('Reservas exibidas para a seção ativa:', filteredBookings);
 
   return (
     <main className="p-6 bg-gray-50 min-h-screen">
@@ -154,11 +173,10 @@ const UnifiedBookings: React.FC<{ activeSection: 'agendado' | 'concluido' }> = (
         ) : error ? (
           <ErrorState message={error} />
         ) : filteredBookings.length > 0 ? (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-1">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredBookings.map((booking) => {
-              const courtName =
-                courts.find((court) => court.id === booking.courtId)?.name || 'Quadra Desconhecida';
-              return <BookingCard key={booking.id} booking={booking} courtName={courtName} />;
+              console.log('Dados da reserva sendo passados para BookingCard:', booking);
+              return <BookingCard key={booking.id} booking={booking} court={booking.court} />;
             })}
           </div>
         ) : (

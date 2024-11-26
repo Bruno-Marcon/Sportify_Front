@@ -19,6 +19,7 @@ import {
   BookingByShareTokenResponse,
   CreatePlayerParams,
   JoinBookingResponse,
+  Stat,
 } from '../types/index';
 
 // ================================
@@ -180,6 +181,34 @@ export const getUserInfo = async (): Promise<UserResponse> => {
     return data;
   } catch (error) {
     console.error('Erro ao buscar informações do usuário:', error);
+    throw error;
+  }
+};
+
+export const getUserStats = async (): Promise<Stat[]> => {
+  try {
+    const token = getToken(); // Função que recupera o token de autenticação
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado.');
+    }
+
+    const response = await fetch(`${BASE_URL}/api/v1/informations/me/stats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar estatísticas: ${response.statusText}`);
+    }
+
+    const data: { stats: Stat[] } = await response.json(); // Tipagem da resposta
+    return data.stats; // Retorna apenas as estatísticas
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
     throw error;
   }
 };
@@ -443,7 +472,13 @@ export const createBooking = async (params: CreateBookingParams): Promise<Create
 };
 
 export const fetchPublicBookings = async (): Promise<PublicBookingResponse> => {
-  const endpoint = `api/v1/bookings?filter[public_eq]=true`;
+  // Obtém a data e hora atual no formato ISO 8601
+  const currentDateTime = new Date().toISOString();
+
+  // Adiciona o filtro ao endpoint
+  const endpoint = `api/v1/bookings?filter[public_eq]=true&filter[starts_on_gt]=${encodeURIComponent(
+    currentDateTime
+  )}`;
 
   try {
     const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {

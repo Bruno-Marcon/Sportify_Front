@@ -232,7 +232,12 @@ export interface LoginResponse {
   };
 }
 
-
+export type Stat = {
+  id: number;
+  label: string;
+  value: string | number;
+  info: string | null;
+};
 
 /**
  * Interface para os horários disponíveis

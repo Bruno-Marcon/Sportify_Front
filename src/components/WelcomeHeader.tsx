@@ -9,6 +9,7 @@ import { Autoplay } from 'swiper/modules'; // Importa o Autoplay do Swiper
 import BookingModal from './BookingModal';
 import ShareModal from './ShareModal';
 import 'swiper/swiper-bundle.css';
+import StatsGrid from './StatsGrid';
 
 export default function WelcomeHeader() {
   const [courts, setCourts] = useState<Court[]>([]);
@@ -52,27 +53,6 @@ export default function WelcomeHeader() {
     fetchUser();
   }, []);
 
-  const stats = [
-    {
-      id: 1,
-      label: 'Próximo Jogo',
-      value: 'Hoje, 19h',
-      info: 'Quadra Society 2',
-      icon: Calendar,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      id: 2,
-      label: 'Tempo em Quadra',
-      value: '24h',
-      info: 'Este mês',
-      icon: Clock,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-  ];
-
   const openBookingModal = (court: Court) => {
     setSelectedCourt(court);
     setIsBookingModalOpen(true);
@@ -106,36 +86,10 @@ export default function WelcomeHeader() {
               Pronto para mais um jogo? Confira as quadras disponíveis agora
             </p>
           </div>
-          <button className="relative p-2 text-white hover:bg-green-500 rounded-full transition-colors">
-            <Bell className="h-6 w-6" />
-            <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full border-2 border-green-600">
-              3
-            </span>
-          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.id} className={`${stat.bgColor} rounded-xl p-4 border border-gray-100`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className={`${stat.color} ${stat.bgColor} p-2 rounded-lg`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3">
-                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                <p className="mt-1 text-xl font-semibold text-gray-900">{stat.value}</p>
-                <p className="mt-1 text-sm text-gray-500">{stat.info}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <StatsGrid/>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
@@ -168,7 +122,7 @@ export default function WelcomeHeader() {
                         onClick={() => openBookingModal(court)}
                       >
                         <img
-                          src={'src/public/image/logo.png'}
+                          src={'src/public/image/quadra_society.jpg'}
                           alt={court.name}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -176,10 +130,10 @@ export default function WelcomeHeader() {
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           <h3 className="text-white font-semibold">{court.name}</h3>
                           <p className="text-green-100 text-sm">
-                            {new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL',
-                            }).format(court.price)}
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(court.price / 100)}
                           </p>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">

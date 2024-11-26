@@ -24,10 +24,10 @@ const Header: React.FC = () => {
             <img
               src="src/public/image/logo.png"
               alt="Logo Sportify"
-              className="h-10 w-auto"
+              className="h-20 w-auto"
             />
             <span className="ml-2 text-xl font-semibold text-gray-900">
-              Sportify
+              Sportify - Quadras Esportivas
             </span>
           </div>
 

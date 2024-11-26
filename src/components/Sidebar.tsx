@@ -26,7 +26,6 @@ const Sidebar: React.FC = () => {
   }
 
   const bottomNavItems: NavItem[] = [
-    { icon: Settings, label: 'Configurações', path: '/settings' },
     { icon: HelpCircle, label: 'Ajuda', path: '/help' },
   ];
 

@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import Login from './pages/Login';
+import JoinGame from './pages/JoinGame';
 import Admin from './components/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute'; 
@@ -17,6 +18,7 @@ const App: React.FC = () => {
         <ToastProvider />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/join/:gameId" element={<JoinGame />} />
           <Route
             path="*"
             element={

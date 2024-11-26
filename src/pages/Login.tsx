@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Mail, Lock, CheckCircle } from 'lucide-react';
+import { Mail, Lock, CheckCircle, ArrowRight } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../connection/apiConnection';
@@ -9,7 +9,6 @@ import { AuthContext } from '../context/AuthContext';
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
@@ -22,11 +21,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await loginUser(email, password);
-
-      console.log('Login bem-sucedido:', response);
-
       login(response);
-
       toast.success('Login realizado com sucesso!', {
         position: 'top-right',
         autoClose: 3000,
@@ -62,110 +57,142 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="hidden w-2/3 flex-col bg-emerald-700 text-white lg:flex">
-        <div className="flex flex-grow flex-col items-center justify-center px-20 text-center">
-          <img
-            src="src/public/image/logo.png"
-            alt="Logo Sportify"
-            className="mb-8 w-48 h-auto"
-          />
-          <h1 className="mb-4 text-5xl font-bold">Bem-vindo ao Sportify!</h1>
-          <p className="mb-8 text-xl">
-            O melhor aplicativo para agendamento de quadras esportivas.
-          </p>
-
-          <ul className="space-y-4 text-left">
-            <li className="flex items-center">
-              <CheckCircle className="mr-2 h-6 w-6 text-white" />
-              <span className="text-lg">Agende quadras de forma rápida e fácil</span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle className="mr-2 h-6 w-6 text-white" />
-              <span className="text-lg">Encontre jogadores para completar seu time</span>
-            </li>
-            <li className="flex items-center">
-              <CheckCircle className="mr-2 h-6 w-6 text-white" />
-              <span className="text-lg">Participe de reservas públicas</span>
-            </li>
-          </ul>
-        </div>
-        <div className="p-6 text-center">
-          <p className="text-sm">&copy; 2023 Sportify. Todos os direitos reservados.</p>
+      {/* Left Side - Hero Section */}
+      <div className="hidden w-2/3 bg-gradient-to-br from-emerald-600 to-emerald-800 lg:block">
+        <div className="relative h-full w-full">
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="relative flex h-full flex-col items-center justify-center px-12 text-white">
+            <img
+              src="src/public/image/logo.png"
+              alt="Logo Sportify"
+              className="mb-12 h-20 w-auto"
+            />
+            <h1 className="mb-6 text-center text-5xl font-bold leading-tight">
+              Transforme sua paixão por esportes em momentos incríveis
+            </h1>
+            <p className="mb-12 text-center text-xl text-emerald-100">
+              Agende quadras, encontre parceiros e viva experiências esportivas únicas
+            </p>
+            
+            <div className="grid grid-cols-2 gap-8">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-start space-x-3 rounded-lg bg-white/10 p-4 backdrop-blur-sm"
+                >
+                  <CheckCircle className="h-6 w-6 flex-shrink-0 text-emerald-300" />
+                  <p className="text-sm text-emerald-50">{feature}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex w-full items-center justify-center bg-gray-100 px-6 lg:w-1/3">
-        <div className="w-full max-w-md">
-          <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">
-            Entre na sua conta
-          </h1>
+      {/* Right Side - Login Form */}
+      <div className="flex w-full flex-col justify-center bg-white px-8 lg:w-1/3">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900">Bem-vindo de volta!</h2>
+            <p className="mt-2 text-gray-600">Entre para continuar sua jornada esportiva</p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="rounded-xl bg-white p-8 shadow-lg">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Seu e-mail
-                </label>
-                <div className="relative mt-1">
-                  <Mail className="absolute inset-y-0 left-0 ml-3 h-5 w-5 text-gray-400" />
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500"
-                    placeholder="Digite seu e-mail"
-                    required
-                  />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <Mail className="h-5 w-5 text-gray-400" />
                 </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full rounded-xl border-0 bg-gray-50 py-4 pl-12 pr-4 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Digite seu e-mail"
+                  required
+                />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Senha
-                </label>
-                <div className="relative mt-1">
-                  <Lock className="absolute inset-y-0 left-0 ml-3 h-5 w-5 text-gray-400" />
+            <div>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full rounded-xl border-0 bg-gray-50 py-4 pl-12 pr-4 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Digite sua senha"
+                  required
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex items-center">
                   <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500"
-                    placeholder="Digite sua senha"
-                    required
+                    id="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                   />
+                  <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
+                    Lembrar-me
+                  </label>
                 </div>
-                <div className="mt-2 text-right">
-                  <button className="text-sm text-emerald-600 hover:underline">
-                    Esqueci minha senha
-                  </button>
-                </div>
+                <button type="button" className="text-sm text-emerald-600 hover:text-emerald-500">
+                  Esqueceu a senha?
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              className="relative w-full overflow-hidden rounded-xl bg-emerald-600 px-4 py-4 text-sm font-semibold text-white transition-all hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              <span className="relative flex items-center justify-center">
+                {isLoading ? (
+                  'Entrando...'
+                ) : (
+                  <>
+                    Entrar
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </span>
             </button>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Ainda não possui uma conta?{' '}
-                <button
-                  onClick={() => setIsRegisterModalOpen(true)}
-                  className="font-medium text-emerald-600 hover:text-emerald-500"
-                >
-                  Criar conta
-                </button>
-              </p>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-4 text-gray-500">ou</span>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setIsRegisterModalOpen(true)}
+              className="w-full rounded-xl border-2 border-emerald-600 bg-transparent px-4 py-4 text-sm font-semibold text-emerald-600 transition-colors hover:bg-emerald-50"
+            >
+              Criar nova conta
+            </button>
           </form>
+
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Ao continuar, você concorda com nossos{' '}
+            <a href="#" className="text-emerald-600 hover:text-emerald-500">
+              Termos de Serviço
+            </a>{' '}
+            e{' '}
+            <a href="#" className="text-emerald-600 hover:text-emerald-500">
+              Política de Privacidade
+            </a>
+          </p>
         </div>
       </div>
+
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
@@ -173,5 +200,12 @@ const Login: React.FC = () => {
     </div>
   );
 };
+
+const features = [
+  'Agende quadras em poucos cliques',
+  'Encontre parceiros para jogar',
+  'Organize campeonatos e torneios',
+  'Acompanhe suas estatísticas'
+];
 
 export default Login;

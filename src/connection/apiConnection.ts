@@ -1,4 +1,5 @@
 
+import axios from 'axios';
 import {
   UserResponse,
   LoginResponse,
@@ -15,6 +16,9 @@ import {
   PagedBookingsResponse,
   BookingsResponse,
   BookingData,
+  BookingByShareTokenResponse,
+  CreatePlayerParams,
+  CreatePlayerResponse
 } from '../types/index';
 
 // ================================
@@ -25,6 +29,15 @@ const BASE_URL = "http://localhost:3000";
 
 const getToken = (): string | null => {
   return localStorage.getItem('token');
+};
+
+const publicFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+
+  return await fetch(url, { ...options, headers });
 };
 
 const authorizedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
@@ -110,6 +123,35 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     return result;
   } catch (error) {
     console.error("Erro ao fazer login:", error);
+    throw error;
+  }
+};
+
+export const createPlayer = async (
+  params: CreatePlayerParams
+): Promise<any> => {
+  const endpoint = `api/v1/players/${params.shareToken}`;
+
+  try {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nickname: params.nickname,
+        role: params.role,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || response.statusText);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao criar jogador:', error);
     throw error;
   }
 };
@@ -440,6 +482,45 @@ export const getBookings = async (
     throw error;
   }
 };
+
+export const getBookingsByShareToken = async (
+  gameId: string
+): Promise<Booking> => {
+  const endpoint = `api/v1/public/bookings/${gameId}`;
+  
+  try {
+    const response = await publicFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro na requisição: ${response.statusText}`);
+    }
+
+    const result: BookingByShareTokenResponse = await response.json(); // Supondo que o tipo retornado seja BookingData
+
+    const { attributes, id } = result.data; // Acessa diretamente o objeto
+
+    const booking: Booking = {
+      id: parseInt(id, 10),
+      courtId: parseInt(attributes.court.id, 10),
+      startsOn: attributes.starts_on,
+      endsOn: attributes.ends_on,
+      isPublic: attributes.public,
+      maxPlayers: 0, // Adapte conforme necessário
+      currentPlayers: attributes.players.length,
+      participants: attributes.players,
+      status: attributes.status,
+      totalValue: attributes.total_value,
+    };
+
+    return booking; // Retorna o único Booking
+  } catch (error) {
+    console.error("Erro ao buscar reserva:", error);
+    throw error;
+  }
+};
+
 
 
 export const deleteBooking = async (bookingId: number): Promise<void> => {

@@ -70,6 +70,10 @@ export interface BookingData {
   attributes: BookingAttributes;
 }
 
+export interface BookingByShareTokenResponse {
+  data: BookingData;
+}
+
 export interface BookingsResponse {
   data: BookingData[];
   meta: {
@@ -88,10 +92,36 @@ export interface PagedBookingsResponse {
   };
 }
 
+export interface CreatePlayerParams {
+  shareToken: string;
+  nickname: string;
+  role: string;
+}
+
+export interface CreatePlayerResponse {
+  id: string;
+  nickname: string;
+  role: string;
+  createdAt: string;
+}
+
 export interface CreateBookingResponse {
   data: BookingData;
 }
 export interface Booking {
+  id: number;
+  courtId: number;
+  startsOn: string;
+  endsOn: string;
+  isPublic: boolean;
+  maxPlayers: number;
+  currentPlayers: number;
+  participants: Participant[];
+  status?: string;
+  totalValue?: number;
+}
+
+export interface BookingByShareToken {
   id: number;
   courtId: number;
   startsOn: string;

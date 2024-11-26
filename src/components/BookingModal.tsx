@@ -96,7 +96,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
       const response: CreateBookingResponse = await createBooking(bookingData);
       const bookingId = response.data.id;
       const shareToken = response.data.attributes.share_token;
-      const shareLink = `${window.location.origin}/bookings/${bookingId}?token=${shareToken}`;
+      const shareLink = `${window.location.origin}/join/${shareToken}`;
 
       toast.success('Reserva realizada com sucesso!', {
         position: 'top-right',

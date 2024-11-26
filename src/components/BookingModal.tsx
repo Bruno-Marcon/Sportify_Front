@@ -131,7 +131,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   const formattedPrice = court
-    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(court.price)
+    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(court.price / 100)
     : '';
 
   return (

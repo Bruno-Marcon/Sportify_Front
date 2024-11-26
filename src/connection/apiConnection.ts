@@ -21,7 +21,7 @@ import {
 // Configurações Gerais
 // ================================
 
-const BASE_URL = "http://127.0.0.1:3000";
+const BASE_URL = "http://localhost:3000";
 
 const getToken = (): string | null => {
   return localStorage.getItem('token');

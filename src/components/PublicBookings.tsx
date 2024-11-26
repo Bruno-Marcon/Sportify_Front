@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users } from 'lucide-react';
+import { Users, Star, Clock } from 'lucide-react';
 import { fetchPublicBookings } from '../connection/apiConnection';
 import JoinModal from './JoinModal';
 
@@ -73,60 +73,92 @@ const PublicBookings: React.FC = () => {
   };
 
   return (
-    <section className="mt-12 bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-800">Reservas Públicas</h2>
-          <p className="mt-2 text-gray-600">
-            Junte-se a jogos públicos e conheça novos jogadores!
-          </p>
+    <aside className="w-full lg:w-80 bg-white border-l border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <Users className="h-5 w-5 text-green-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Reservas Públicas</h2>
         </div>
+        <span className="text-sm text-green-600 font-medium">Hoje</span>
+      </div>
+
+      <div className="space-y-4">
         {publicBookings.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {publicBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="overflow-hidden rounded-xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
-              >
-                <div className="p-6">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-800">{booking.court.name}</h3>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        booking.status === 'agendado'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {booking.status}
-                    </span>
+          publicBookings.map((booking) => (
+            <div
+              key={booking.id}
+              className="p-4 bg-white rounded-xl border border-gray-200 hover:border-green-500 transition-colors cursor-pointer"
+            >
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{booking.court.name}</h3>
+                    <p className="text-sm text-gray-600 capitalize">
+                      {booking.court.category}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 capitalize">{booking.court.category}</p>
-                  <p className="mt-2 text-sm font-medium text-gray-700">
-                    Horário: {booking.time}
-                  </p>
-                  <div className="mt-2 flex items-center text-gray-600">
-                    <Users className="h-5 w-5" />
-                    <span className="ml-2 text-sm">
-                      {booking.currentPlayers}/{booking.maxPlayers} Jogadores
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleOpenModal(booking)}
-                    className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      booking.status === 'agendado'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
                   >
-                    Juntar-se
-                  </button>
+                    {booking.status}
+                  </span>
                 </div>
+
+                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {booking.time}
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 mr-1" />
+                    {booking.currentPlayers}/{booking.maxPlayers} Jogadores
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex -space-x-2">
+                    {booking.participants.slice(0, 3).map((participant, index) => (
+                      <div
+                        key={index}
+                        className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium"
+                      >
+                        {participant.name[0]}
+                      </div>
+                    ))}
+                    {booking.currentPlayers > 3 && (
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs text-gray-600">
+                        +{booking.currentPlayers - 3}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {booking.maxPlayers - booking.currentPlayers} vagas
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleOpenModal(booking)}
+                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Participar
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         ) : (
           <p className="text-center text-gray-600">
             Nenhuma reserva pública disponível no momento.
           </p>
         )}
       </div>
+
+      <button className="mt-6 w-full px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors text-sm font-medium">
+        Ver Todas as Reservas
+      </button>
 
       {selectedBooking && (
         <JoinModal
@@ -136,7 +168,7 @@ const PublicBookings: React.FC = () => {
           court={selectedBooking.court}
         />
       )}
-    </section>
+    </aside>
   );
 };
 

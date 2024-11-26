@@ -1,11 +1,8 @@
-// src/App.tsx
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
-import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
 import Admin from './components/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,7 +17,6 @@ const App: React.FC = () => {
         <ToastProvider />
         <Routes>
           <Route path="/login" element={<Login />} />
-
           <Route
             path="*"
             element={
@@ -30,8 +26,7 @@ const App: React.FC = () => {
                   <div className="flex-1">
                     <Header />
                     <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/myBookings" element={<MyBookings />} />                      
+                      <Route path="/" element={<HomePage />} />                    
                       <Route
                         path="/admin"
                         element={

@@ -13,21 +13,34 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="flex items-center justify-between bg-white px-6 py-4 shadow-sm">
-      <h1
-        onClick={() => navigate('/')}
-        className="cursor-pointer text-lg font-bold text-gray-900 hover:text-emerald-600"
-      >
-        Sportify
-      </h1>
+    <header className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          {/* Logo */}
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <img
+              src="src/public/image/logo.png"
+              alt="Logo Sportify"
+              className="h-10 w-auto"
+            />
+            <span className="ml-2 text-xl font-semibold text-gray-900">
+              Sportify
+            </span>
+          </div>
 
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-2 rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-300 hover:text-emerald-600"
-      >
-        <LogOut className="h-5 w-5 text-gray-700 hover:text-emerald-600" />
-        <span>Sair</span>
-      </button>
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </button>
+        </div>
+      </div>
     </header>
   );
 };

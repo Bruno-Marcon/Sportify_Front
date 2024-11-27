@@ -75,30 +75,33 @@ export default function WelcomeHeader() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex justify-between items-start">
+      {/* Header de boas-vindas */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-lg p-4 sm:p-6 text-white">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               {user ? `Olá, ${user.name}! 👋` : 'Olá! 👋'}
             </h1>
-            <p className="mt-2 text-green-100">
+            <p className="mt-2 text-sm sm:text-base text-green-100">
               Pronto para mais um jogo? Confira as quadras disponíveis agora
             </p>
           </div>
         </div>
       </div>
 
-      <StatsGrid/>
+      {/* Grid de estatísticas */}
+      <StatsGrid />
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Quadras em Destaque</h2>
+      {/* Slider de quadras */}
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Quadras em Destaque</h2>
         </div>
 
         {isLoading ? (
-         <p className="text-center text-red-500">{}</p>
+          <p className="text-center text-gray-500 text-sm sm:text-base">Carregando...</p>
         ) : errorMessage ? (
-          <p className="text-center text-red-500">{errorMessage}</p>
+          <p className="text-center text-red-500 text-sm sm:text-base">{errorMessage}</p>
         ) : (
           <Swiper
             spaceBetween={20}
@@ -113,7 +116,7 @@ export default function WelcomeHeader() {
               const courtSlice = courts.slice(index * limit, index * limit + limit);
               return (
                 <SwiperSlide key={index}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {courtSlice.map((court) => (
                       <div
                         key={court.id}
@@ -123,20 +126,22 @@ export default function WelcomeHeader() {
                         <img
                           src={'src/public/image/quadra_society.jpg'}
                           alt={court.name}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-40 sm:h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <h3 className="text-white font-semibold">{court.name}</h3>
-                          <p className="text-green-100 text-sm">
-                          {new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          }).format(court.price / 100)}
+                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4">
+                          <h3 className="text-white text-sm sm:text-base font-semibold">
+                            {court.name}
+                          </h3>
+                          <p className="text-green-100 text-xs sm:text-sm">
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(court.price / 100)}
                           </p>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                          <p className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                          <p className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
                             Reservar Agora
                           </p>
                         </div>
@@ -150,6 +155,7 @@ export default function WelcomeHeader() {
         )}
       </div>
 
+      {/* Modais */}
       {selectedCourt && (
         <BookingModal
           isOpen={isBookingModalOpen}
@@ -170,5 +176,6 @@ export default function WelcomeHeader() {
         />
       )}
     </div>
+
   );
 }

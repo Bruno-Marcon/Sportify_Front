@@ -3,7 +3,6 @@ import { getCourts } from '../connection/apiConnection';
 import BookingModal from './BookingModal';
 import ShareModal from './ShareModal';
 import { Court } from '../types/index';
-import WelcomeHeader from './WelcomeHeader'; // Importação do WelcomeHeader
 
 const CourtList: React.FC = () => {
   const [courts, setCourts] = useState<Court[]>([]);
@@ -72,9 +71,8 @@ const CourtList: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Header */}
       <div className="mb-8">
-        <WelcomeHeader />
       </div>
-
+  
       {isLoading ? (
         <p className="text-center text-gray-700">Carregando quadras...</p>
       ) : errorMessage ? (
@@ -83,7 +81,8 @@ const CourtList: React.FC = () => {
         <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Grid ajustado para responsividade */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {courts.map((court) => (
               <div
                 key={court.id}
@@ -91,8 +90,8 @@ const CourtList: React.FC = () => {
               >
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-800">{court.name}</h3>
-                    <div className="ml-2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-800">{court.name}</h3>
+                    <div className="ml-2 rounded-full bg-emerald-600 px-3 py-1 text-xs sm:text-sm font-medium text-white">
                       {court.category}
                     </div>
                   </div>
@@ -100,11 +99,11 @@ const CourtList: React.FC = () => {
                   <div className="mt-4 flex items-center text-gray-600">
                     <span className="ml-2 text-sm">Máximo {court.max_players} jogadores</span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-gray-800">
                       <strong>Status:</strong> {court.status === 'open' ? 'Disponível' : 'Fechada'}
                     </p>
-                    <p className="text-lg font-semibold text-emerald-600">
+                    <p className="text-lg font-semibold text-emerald-600 mt-2 sm:mt-0">
                       {new Intl.NumberFormat('pt-BR', {
                         style: 'currency',
                         currency: 'BRL',
@@ -124,13 +123,13 @@ const CourtList: React.FC = () => {
               </div>
             ))}
           </div>
-
+  
+          {/* Navegação por páginas responsiva */}
           <div className="mt-8 flex flex-col items-center space-y-4">
             <p className="text-sm text-gray-600">
               Mostrando {courts.length} de {totalCount} quadras
             </p>
-
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center justify-center space-x-2">
               <button
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
@@ -142,8 +141,8 @@ const CourtList: React.FC = () => {
               >
                 Anterior
               </button>
-
-              <div className="flex space-x-2">
+  
+              <div className="flex space-x-2 overflow-x-auto">
                 {getPageNumbers().map((page) => (
                   <button
                     key={page}
@@ -158,7 +157,7 @@ const CourtList: React.FC = () => {
                   </button>
                 ))}
               </div>
-
+  
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
@@ -174,7 +173,8 @@ const CourtList: React.FC = () => {
           </div>
         </>
       )}
-
+  
+      {/* Modais */}
       {isModalOpen && selectedCourt && (
         <BookingModal
           isOpen={isModalOpen}
@@ -183,17 +183,17 @@ const CourtList: React.FC = () => {
           onBookingComplete={handleBookingComplete}
         />
       )}
-
-        {shareModalLink && selectedCourt && (
-          <ShareModal
-            isOpen={!!shareModalLink}
-            onClose={() => setShareModalLink(null)}
-            bookingLink={shareModalLink}
-            date={new Date().toLocaleDateString('pt-BR')} // Data atual como exemplo
-            time={'19:00'} // Exemplo de horário fixo
-            service={selectedCourt.name || 'Serviço não informado'} // Nome da quadra
-          />
-        )}
+  
+      {shareModalLink && selectedCourt && (
+        <ShareModal
+          isOpen={!!shareModalLink}
+          onClose={() => setShareModalLink(null)}
+          bookingLink={shareModalLink}
+          date={new Date().toLocaleDateString('pt-BR')}
+          time={'19:00'}
+          service={selectedCourt.name || 'Serviço não informado'}
+        />
+      )}
     </div>
   );
 };

@@ -52,14 +52,17 @@ const PublicBookingCard: React.FC<{
               {participant.name[0]}
             </div>
           ))}
-          {booking.participants.length > 3 && (
-            <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs text-gray-600">
-              +{booking.participants.length - 3}
+          {booking.participants.slice(0, 3).map((participant, index) => (
+            <div
+              key={index}
+              className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium"
+            >
+              {participant.name?.[0] || '?'}
             </div>
-          )}
+          ))}
         </div>
         <span className="text-sm text-gray-600">
-          {booking.court.maxPlayers - booking.participants.length} vagas
+          {Math.max(0, booking.court.maxPlayers - booking.participants.length)} vagas
         </span>
       </div>
 
@@ -84,34 +87,46 @@ const PublicBookings: React.FC = () => {
     const fetchBookings = async () => {
       setIsLoading(true);
       setError(null);
-    
+  
       try {
         const response: PublicBookingResponse = await fetchPublicBookings();
-    
-        const bookings: Booking[] = response.data.map((b) => ({
-          id: b.id,
-          time: new Date(b.attributes.starts_on).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          startsOn: b.attributes.starts_on,
-          endsOn: b.attributes.ends_on,
-          status: b.attributes.status,
-          isPublic: b.attributes.public,
-          court: {
-            id: b.attributes.court.id,
-            name: b.attributes.court.name,
-            category: b.attributes.court.category,
-            price: b.attributes.court.price,
-            maxPlayers: b.attributes.court.max_players || 22, // Ajuste para maxPlayers
-          },
-          participants: b.attributes.players.map((player) => ({
-            id: player.id,
-            name: player.nickname || 'Jogador desconhecido',
-            position: player.role || 'Não especificado',
-          })),
-        }));
-    
+  
+        // Validação do formato dos dados retornados
+        if (!response || !response.data || !Array.isArray(response.data)) {
+          throw new Error('Dados retornados pelo backend estão em um formato inesperado.');
+        }
+  
+        const bookings: Booking[] = response.data.map((b) => {
+          const court = b.attributes.court || {};
+          const players = b.attributes.players || [];
+          console.log('Reservas públicas retornadas pelo backend:', publicBookings);
+          console.log('Reserva selecionada para participar:', selectedBooking);
+          return {
+            
+            id: parseInt(b.id, 10),
+            time: new Date(b.attributes.starts_on).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            startsOn: b.attributes.starts_on,
+            endsOn: b.attributes.ends_on,
+            status: b.attributes.status || 'indefinido',
+            isPublic: b.attributes.public || false,
+            court: {
+              id: court.id || 0,
+              name: court.name || 'Quadra desconhecida',
+              category: court.category || 'Indefinido',
+              price: court.price || 0,
+              maxPlayers: court.max_players || 22, // Default para maxPlayers
+            },
+            participants: players.map((player) => ({
+              id: player.id,
+              name: player.nickname || 'Jogador desconhecido',
+              position: player.role || 'Não especificado',
+            })),
+          };
+        });
+  
         setPublicBookings(bookings);
       } catch (error) {
         console.error('Erro ao buscar reservas públicas:', error);
@@ -120,54 +135,58 @@ const PublicBookings: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+  
     fetchBookings();
   }, []);
-
   const handleOpenModal = (booking: Booking) => {
     setSelectedBooking(booking);
     setIsModalOpen(true);
   };
 
   return (
-    <aside className="w-full lg:w-80 bg-white border-l border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <Users className="h-5 w-5 text-green-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Reservas Públicas</h2>
-        </div>
-        <span className="text-sm text-green-600 font-medium">Hoje</span>
-      </div>
+    <aside className="w-full lg:w-80 bg-white border-l border-gray-200 p-4 sm:p-6">
+  <div className="flex flex-wrap items-center justify-between mb-4 sm:mb-6">
+    <div className="flex items-center space-x-2">
+      <Users className="h-5 w-5 text-green-600" />
+      <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+        Reservas Públicas
+      </h2>
+    </div>
+    <span className="text-xs sm:text-sm text-green-600 font-medium">Hoje</span>
+  </div>
 
-      {isLoading ? (
-        <p className="text-center text-gray-600">Carregando...</p>
-      ) : error ? (
-        <p className="text-center text-red-600">{error}</p>
-      ) : publicBookings.length > 0 ? (
-        <div className="space-y-4">
-          {publicBookings.map((booking) => (
-            <PublicBookingCard
-              key={booking.id}
-              booking={booking}
-              onClick={() => handleOpenModal(booking)}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="text-center text-gray-600">
-          Nenhuma reserva pública disponível no momento.
-        </p>
-      )}
-
-      {selectedBooking && (
-        <JoinModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          booking={selectedBooking}
-          court={selectedBooking.court}
+  {isLoading ? (
+    <p className="text-center text-sm sm:text-base text-gray-600">Carregando...</p>
+  ) : error ? (
+    <p className="text-center text-sm sm:text-base text-red-600">{error}</p>
+  ) : publicBookings.length > 0 ? (
+    <div className="space-y-3 sm:space-y-4">
+      {publicBookings.map((booking) => (
+        <PublicBookingCard
+          key={booking.id}
+          booking={booking}
+          onClick={() => handleOpenModal(booking)}
         />
-      )}
-    </aside>
+      ))}
+    </div>
+  ) : (
+    <p className="text-center text-sm sm:text-base text-gray-600">
+      Nenhuma reserva pública disponível no momento.
+    </p>
+  )}
+
+  {selectedBooking && (
+    <JoinModal
+    isOpen={isModalOpen}
+    onClose={() => {
+      setIsModalOpen(false);
+      setSelectedBooking(null);
+    }}
+    booking={selectedBooking}
+    court={selectedBooking.court}
+  />
+  )}
+</aside>
   );
 };
 

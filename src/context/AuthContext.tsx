@@ -1,6 +1,6 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import { LoginResponse, User } from '../types/index';
-
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,6 +23,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // Novo estado de carregamento
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       setUser(JSON.parse(storedUser));
     }
+    setLoading(false); // Finaliza o carregamento após verificar a autenticação
   }, []);
 
   const login = (loginResponse: LoginResponse) => {
@@ -50,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
-      {children}
+      {!loading ? children : <div className="flex items-center justify-center min-h-screen">Carregando...</div>}
     </AuthContext.Provider>
   );
 };

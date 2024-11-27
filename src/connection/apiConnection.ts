@@ -21,6 +21,9 @@ import {
   JoinBookingResponse,
   Stat,
   BookingDetailsResponse,
+  CourtUpdateData,
+  CourtUpdateResponse,
+  APIErrorResponse,
 } from '../types/index';
 
 // ================================
@@ -302,58 +305,6 @@ export const createCourt = async (courtData: {
     throw error;
   }
 };
-
-export const updateCourt = async (
-  courtId: number,
-  courtData: {
-    name: string;
-    category: string;
-    description: string;
-    max_players: number;
-    price: number;
-    status: string;
-  }
-): Promise<Court> => {
-  const endpoint = `api/v1/courts/${courtId}`;
-
-  console.log(`Atualizando quadra com ID: ${courtId}`, courtData);
-
-  try {
-    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(courtData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao atualizar quadra.');
-    }
-
-    const result = await response.json();
-    console.log('Resposta da API após atualização da quadra:', result);
-
-    const data = result.data;
-    const { attributes, id } = data;
-    const updatedCourt: Court = {
-      id: parseInt(id, 10),
-      name: attributes.name,
-      category: attributes.category,
-      description: attributes.description,
-      max_players: attributes.max_players,
-      price: Number(attributes.price),
-      status: attributes.status,
-    };
-
-    return updatedCourt;
-  } catch (error) {
-    console.error("Erro na função updateCourt:", error);
-    throw error;
-  }
-};
-
 
 export const deleteCourt = async (courtId: number): Promise<void> => {
   const endpoint = `api/v1/admin/courts/${courtId}`;
@@ -658,6 +609,35 @@ export const joinBooking = async (bookingId: number): Promise<JoinBookingRespons
     return result;
   } catch (error) {
     console.error('Erro ao ingressar na reserva:', error);
+    throw error;
+  }
+};
+export const updateCourt = async (
+  courtId: number,
+  courtData: CourtUpdateData
+): Promise<CourtUpdateResponse> => {
+  const endpoint = `api/v1/admin/courts/${courtId}`; // **Corrigido para incluir "admin"**
+
+  try {
+    const response = await authorizedFetch(`${BASE_URL}/${endpoint}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(courtData),
+    });
+
+    if (!response.ok) {
+      // Tenta extrair a mensagem de erro da resposta
+      const errorData: APIErrorResponse = await response.json();
+      throw new Error(errorData.message || 'Erro ao atualizar quadra.');
+    }
+
+    // Extrai os dados da resposta
+    const result: CourtUpdateResponse = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Erro na função updateCourt:", error);
     throw error;
   }
 };

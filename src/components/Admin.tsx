@@ -1,7 +1,7 @@
 // src/components/Admin.tsx
 
 import React, { useState, useContext, useEffect } from 'react';
-import { Plus, Calendar, Edit2, Trash2, Filter } from 'lucide-react';
+import { Plus, Calendar, Edit2, Trash2} from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { getCourts, createCourt, deleteCourt, getBookings, deleteBooking } from '../connection/apiConnection';
@@ -249,14 +249,13 @@ const Admin: React.FC = () => {
 
   return (
     <div className="p-6">
-    
       <div className="mb-4 text-right text-gray-600">
         {user && <span>Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>}
       </div>
-
-      <div className="mb-6 flex justify-between items-center">
+  
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciamento de Quadras</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gerenciamento de Quadras</h1>
           <p className="text-gray-600">Gerencie suas quadras e visualize as reservas</p>
         </div>
         <div className="flex gap-4">
@@ -282,10 +281,10 @@ const Admin: React.FC = () => {
           </button>
         </div>
       </div>
-
+  
       {activeTab === 'courts' && (
         <>
-          <div className="mb-6 flex justify-between items-center">
+          <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <button
               onClick={() => setIsAddingCourt(true)}
               className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -293,12 +292,8 @@ const Admin: React.FC = () => {
               <Plus size={20} />
               Adicionar Quadra
             </button>
-            <button className="flex items-center gap-2 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100">
-              <Filter size={20} />
-              Filtrar
-            </button>
           </div>
-
+  
           {isLoadingCourts ? (
             <p className="text-center text-gray-700">Carregando quadras...</p>
           ) : errorCourts ? (
@@ -307,7 +302,7 @@ const Admin: React.FC = () => {
             <p className="text-center text-gray-700">Nenhuma quadra disponível no momento.</p>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {courts.map((court) => (
                   <div
                     key={court.id}
@@ -345,13 +340,13 @@ const Admin: React.FC = () => {
                   </div>
                 ))}
               </div>
-
+  
               <div className="mt-8 flex flex-col items-center space-y-4">
                 <p className="text-sm text-gray-600">
                   Mostrando {courts.length} de {totalCountCourts} quadras
                 </p>
-
-                <div className="flex items-center space-x-2">
+  
+                <div className="flex flex-wrap justify-center gap-2">
                   <button
                     onClick={handlePreviousPageCourts}
                     disabled={currentPageCourts === 1}
@@ -363,23 +358,21 @@ const Admin: React.FC = () => {
                   >
                     Anterior
                   </button>
-
-                  <div className="flex space-x-2">
-                    {getPageNumbersCourts().map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageSelectCourts(page)}
-                        className={`px-3 py-1 rounded ${
-                          page === currentPageCourts
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
+  
+                  {getPageNumbersCourts().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageSelectCourts(page)}
+                      className={`px-3 py-1 rounded ${
+                        page === currentPageCourts
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+  
                   <button
                     onClick={handleNextPageCourts}
                     disabled={currentPageCourts === totalPagesCourts}
@@ -397,23 +390,10 @@ const Admin: React.FC = () => {
           )}
         </>
       )}
-
+  
       {activeTab === 'reservations' && (
         <>
-          <div className="mb-6 flex justify-between items-center">
-            <button
-              onClick={() => {/* Implementar funcionalidade de adicionar reserva */}}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={20} />
-              Adicionar Reserva
-            </button>
-            <button className="flex items-center gap-2 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100">
-              <Filter size={20} />
-              Filtrar
-            </button>
-          </div>
-
+  
           {isLoadingBookings ? (
             <p className="text-center text-gray-700">Carregando reservas...</p>
           ) : errorBookings ? (
@@ -422,75 +402,73 @@ const Admin: React.FC = () => {
             <p className="text-center text-gray-700">Nenhuma reserva disponível no momento.</p>
           ) : (
             <>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Quadra
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Início
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fim
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Participantes
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ações
-                        </th>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Quadra
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Início
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Fim
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Participantes
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {bookings.map((booking) => (
+                      <tr key={booking.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {courts.find((c) => c.id === booking.courtId)?.name || 'Quadra Desconhecida'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {new Date(booking.startsOn).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {new Date(booking.endsOn).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {booking.participants.map((p) => p.name).join(', ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {booking.status || 'Pendente'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex gap-2">
+                            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                              <Calendar size={18} />
+                            </button>
+                            <button
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                              onClick={() => handleDeleteBooking(booking.id)}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {bookings.map((booking) => (
-                        <tr key={booking.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {courts.find((c) => c.id === booking.courtId)?.name || 'Quadra Desconhecida'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {new Date(booking.startsOn).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {new Date(booking.endsOn).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {booking.participants.map((p) => p.name).join(', ')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {booking.status || 'Pendente'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex gap-2">
-                              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                                <Calendar size={18} />
-                              </button>
-                              <button
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                onClick={() => handleDeleteBooking(booking.id)}
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
+  
               <div className="mt-8 flex flex-col items-center space-y-4">
                 <p className="text-sm text-gray-600">
                   Mostrando {bookings.length} de {totalCountBookings} reservas
                 </p>
-
-                <div className="flex items-center space-x-2">
+  
+                <div className="flex flex-wrap justify-center gap-2">
                   <button
                     onClick={handlePreviousPageBookings}
                     disabled={currentPageBookings === 1}
@@ -502,23 +480,21 @@ const Admin: React.FC = () => {
                   >
                     Anterior
                   </button>
-
-                  <div className="flex space-x-2">
-                    {getPageNumbersBookings().map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageSelectBookings(page)}
-                        className={`px-3 py-1 rounded ${
-                          page === currentPageBookings
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
+  
+                  {getPageNumbersBookings().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageSelectBookings(page)}
+                      className={`px-3 py-1 rounded ${
+                        page === currentPageBookings
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+  
                   <button
                     onClick={handleNextPageBookings}
                     disabled={currentPageBookings === totalPagesBookings}
@@ -536,10 +512,10 @@ const Admin: React.FC = () => {
           )}
         </>
       )}
-
+  
       {isAddingCourt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md sm:max-w-lg">
             <h2 className="text-xl font-semibold mb-4">Adicionar Nova Quadra</h2>
             <form className="space-y-4" onSubmit={handleAddCourt}>
               <div>
@@ -553,7 +529,11 @@ const Admin: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Categoria</label>
-                <select name="category" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                <select
+                  name="category"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                >
                   <option value="soccer">Futebol</option>
                   <option value="volleyball">Vôlei</option>
                   <option value="basketball">Basquete</option>
@@ -569,9 +549,7 @@ const Admin: React.FC = () => {
                 ></textarea>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Máximo de Jogadores
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Máximo de Jogadores</label>
                 <input
                   type="number"
                   name="maxPlayers"
@@ -610,7 +588,7 @@ const Admin: React.FC = () => {
           </div>
         </div>
       )}
-
+  
       {editingCourt && (
         <EditCourtModal
           isOpen={!!editingCourt}
@@ -621,6 +599,6 @@ const Admin: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default Admin;

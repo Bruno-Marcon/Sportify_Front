@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+// src/components/EditCourtModal.tsx
+
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Court } from '../types/index';
+import { Court, CourtUpdateData, CourtUpdateResponse } from '../types/index';
 import { updateCourt } from '../connection/apiConnection';
 
 interface EditCourtModalProps {
@@ -19,11 +21,23 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
   const [status, setStatus] = useState<string>(court.status);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Atualizar os estados quando a quadra mudar (útil se a modal for reusada para diferentes quadras)
+  useEffect(() => {
+    if (isOpen) {
+      setName(court.name);
+      setCategory(court.category);
+      setDescription(court.description);
+      setMaxPlayers(court.max_players);
+      setPrice(court.price);
+      setStatus(court.status);
+    }
+  }, [isOpen, court]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const updatedData = {
+    const updatedData: CourtUpdateData = {
       name,
       category,
       description,
@@ -35,8 +49,20 @@ const EditCourtModal: React.FC<EditCourtModalProps> = ({ isOpen, onClose, court,
     console.log('Dados enviados para atualização da quadra:', updatedData);
 
     try {
-      const updatedCourt = await updateCourt(court.id, updatedData);
-      console.log('Quadra atualizada com sucesso:', updatedCourt);
+      const response: CourtUpdateResponse = await updateCourt(court.id, updatedData);
+      console.log('Quadra atualizada com sucesso:', response);
+
+      // Extrai os dados atualizados da resposta
+      const updatedCourt: Court = {
+        id: parseInt(response.data.id, 10),
+        name: response.data.attributes.name,
+        category: response.data.attributes.category,
+        description: response.data.attributes.description,
+        max_players: response.data.attributes.max_players,
+        price: parseFloat(response.data.attributes.price.toString()),
+        status: response.data.attributes.status,
+      };
+
       onUpdate(updatedCourt);
       toast.success('Quadra atualizada com sucesso!');
       onClose();

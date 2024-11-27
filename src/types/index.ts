@@ -368,3 +368,38 @@ export interface Player3 {
   nickname: string; // Apelido do jogador
   role: string | null; // Papel do jogador na partida (se aplicável)
 }
+export interface CourtUpdateData {
+  name: string;
+  max_players: number;
+  category: string;
+  description: string;
+  price: number;
+  status: string;
+}
+
+// Interface para os atributos da quadra na resposta
+export interface CourtAttributes {
+  name: string;
+  max_players: number;
+  category: string;
+  description: string;
+  price: number;
+  status: string;
+}
+
+// Interface para o objeto de dados na resposta
+export interface CourtDataResponse {
+  id: string;
+  type: "court";
+  attributes: CourtAttributes;
+}
+
+// Interface para a resposta completa da API
+export interface CourtUpdateResponse {
+  data: CourtDataResponse;
+}
+
+// Interface para possíveis erros retornados pela API
+export interface APIErrorResponse {
+  message: string;
+}

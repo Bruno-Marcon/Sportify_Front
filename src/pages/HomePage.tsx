@@ -19,16 +19,16 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <main className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto">
+      <div className="flex flex-col lg:flex-row">
+        <main className="flex-1 p-4 sm:p-6">
+          <div className="max-w-full sm:max-w-4xl mx-auto">
             {/* Exibir Skeleton ou WelcomeHeader */}
             {isLoading ? <WelcomeHeaderSkeleton /> : <WelcomeHeader />}
 
-            <div className="flex justify-center space-x-4 my-6">
+            <div className="flex flex-wrap justify-center sm:justify-start space-x-0 sm:space-x-4 space-y-4 sm:space-y-0 my-6">
               <button
                 onClick={() => setActiveSection('bookings')}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium ${
                   activeSection === 'bookings'
                     ? 'bg-green-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -38,7 +38,7 @@ const HomePage: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveSection('courtsBookings')}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium ${
                   activeSection === 'courtsBookings'
                     ? 'bg-green-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -48,8 +48,10 @@ const HomePage: React.FC = () => {
               </button>
             </div>
 
-            {activeSection === 'bookings' && <MyBookings />}
-            {activeSection === 'courtsBookings' && <CourtsBookings />}
+            <div className="mt-6">
+              {activeSection === 'bookings' && <MyBookings />}
+              {activeSection === 'courtsBookings' && <CourtsBookings />}
+            </div>
           </div>
         </main>
       </div>
@@ -64,6 +66,7 @@ const HomePage: React.FC = () => {
         onClose={() => setShareModalOpen(false)}
       />
     </div>
+
   );
 };
 
